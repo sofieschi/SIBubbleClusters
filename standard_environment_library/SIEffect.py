@@ -89,6 +89,7 @@ class SIEffect(PySI.Effect):
     def on_leave(capability, transmission_type):
         def wrap(f):
             def wrapped_f(*args):
+                print('lasso_enter_recv parent=', f)
                 return f(*args)
             return wrapped_f
         return wrap
@@ -286,6 +287,9 @@ class SIEffect(PySI.Effect):
 
         ## member attribute variable storing the y position of the mouse cursor
         self.mouse_y = 0
+
+    def get_uuid(self):
+        return self._uuid;
 
     ## member function for retrieving the maximum width of a region
     #
@@ -494,6 +498,70 @@ class SIEffect(PySI.Effect):
 
             if lr in self.link_relations:
                 del self.link_relations[self.link_relations.index(lr)]
+
+    _BUBBLES_DESTROYED = []
+
+    ## First remove all destroyed bubbels from the linked list
+    def delete_destroyed_bubbles_from_link_relations(self) -> None:
+        links_to_be_removed = []
+        print('Vergleich:')
+        print(len(self.link_relations))
+        i = 0
+        for lnk in self.link_relations:
+            print(lnk.sender)
+            if lnk.sender in self._BUBBLES_DESTROYED:
+                links_to_be_removed.append(i)
+                print('remove link')
+                print(i)
+            i = i + 1
+        print('Vergleich fertig')
+        links_to_be_removed.reverse()
+        for i in links_to_be_removed:
+            del self.link_relations[i]
+
+    def merge_link(self, sender_uuid: str, sender_attribute: str, receiver_uuid: str, receiver_attribute: str):
+        if sender_uuid != "" and sender_attribute != "" and receiver_uuid != "" and receiver_attribute != "":
+            self.delete_destroyed_bubbles_from_link_relations()
+            if len(self.link_relations) == 0:
+                self.link_relations.append([sender_uuid, sender_attribute, receiver_uuid, receiver_attribute])
+                return 0
+            else:
+                print("Bubble deleted:")
+                print(sender_uuid)
+                self._BUBBLES_DESTROYED.append(sender_uuid)
+            print("Pruefung:")
+            first = ''
+            for lnk in self.link_relations:
+                print(lnk.sender)
+                if first == '':
+                    first = lnk.sender
+            return first
+        return 0
+
+    def relink_to_new_bubble(self, lasso_old_uuid, lasso_new_uuid):
+        links_to_change = []
+        links_to_be_removed = []
+        i = 0
+        print('elink_to_new_bubble')
+        print(lasso_old_uuid)
+        for lnk in self.link_relations:
+            print(lnk.sender)
+            if lnk.sender in lasso_old_uuid:
+                print('gef')
+                links_to_change.append([lnk.sender_attrib, lnk.recv, lnk.recv_attrib])
+                links_to_be_removed.append(i)
+            i = i+1
+        print('anzahl changes')
+        print(len(links_to_change))
+        links_to_be_removed.reverse()
+        for i in links_to_be_removed:
+            del self.link_relations[i]
+        ret = len(links_to_change)
+        print('return')
+        print(ret)
+        for lnk in links_to_change:
+            self.create_link(lasso_new_uuid, lnk[0], lnk[1], lnk[2])
+        return ret
 
     ## member function for emitting a linking action
     #

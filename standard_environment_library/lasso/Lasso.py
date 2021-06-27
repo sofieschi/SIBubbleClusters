@@ -32,3 +32,12 @@ class Lasso(Deletable, Movable, SIEffect):
 		self.last_y = self.y
 
 		return x, y, self.x, self.y
+
+	@SIEffect.on_enter('__bubble_loeschen__', SIEffect.RECEPTION)
+	def bubble_loeschen(self, lasso_old_uuid, lasso_new_uuid):
+		print('__bubble_loeschen__ empfangen')
+		print(lasso_old_uuid)
+		print(lasso_new_uuid)
+		print(self._uuid)
+		if lasso_old_uuid == self._uuid:
+			self.delete()
