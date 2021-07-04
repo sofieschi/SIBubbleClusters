@@ -29,6 +29,7 @@ class Lassoable(SIEffect):
                 # They must be relinked to new bubble
                 all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
                 SIEffect.debug('LASSOABLE: nr of lassoables={}'.format(len(all_lassoable)))
+                bboxes_points = []
                 for l in all_lassoable:
                     nr_relinks = l.relink_to_new_bubble(old_bubble.get_uuid(), new_lasso_uuid)
                     if nr_relinks > 0:
@@ -38,8 +39,14 @@ class Lassoable(SIEffect):
                         # => l.abs_xy = l.xy + l.aabb[0] = new_bubble.abs_xy
                         # => l.xy = new_bubble.abs_xy - l.aabb[0]
                         l.move(new_bubble.absolute_x_pos() - l.aabb[0].x, new_bubble.absolute_y_pos() - l.aabb[0].y)
+                        # the new_bubble must change ist hull according to the newly linked textfiles
+                        # therefore prepare the bounding boxes points of the textfile for hull recalculation
+                        # They are provided in absolute coordinates
+                        for i in list(range(4)):
+                            bboxes_points.append([l.x + l.aabb[i].x, l.y + l.aabb[i].y])
                         #SIEffect.debug('LASSOABLE: move to {},{}'.format(new_bubble.x, new_bubble.y))
                 old_bubble.delete()
+                new_bubble.recalculate_hull(bboxes_points)
 
     @SIEffect.on_leave(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_leave_recv(self, parent_uuid):
