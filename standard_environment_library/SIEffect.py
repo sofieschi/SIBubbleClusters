@@ -30,6 +30,9 @@ class SIEffect(PySI.Effect):
     # May lead to unexpected / barely debuggable behaviour!
     NO_RESAMPLING = False
 
+    _regmap = {}
+
+
     ## Decorator for registering on_enter collision events
     #
     # Decorates a specific function in other plugin files to be used as an on_enter collision event.
@@ -162,6 +165,7 @@ class SIEffect(PySI.Effect):
 
         ## member attribute variable containing the universally unique identifier (uuid) of a drawn region as a str
         self._uuid = uuid
+        SIEffect.add_to_registry(self)
 
         ## member attribute variable containing the name of a drawn region as a str
         self.name = regionname
@@ -497,28 +501,44 @@ class SIEffect(PySI.Effect):
             lr = PySI.LinkRelation(sender_uuid, sender_attribute, receiver_uuid, receiver_attribute)
 
             if lr in self.link_relations:
+                SIEffect.debug('remove_link')
                 del self.link_relations[self.link_relations.index(lr)]
 
+    def get_all_lnk_sender(self):
+        result = []
+        for lnk in self.link_relations:
+            if lnk.sender not in result:
+                result.append(lnk.sender)
+        return result        
+               
+    def get_all_lnk_recv(self):
+        result = []
+        for lnk in self.link_relations:
+            if lnk.recv not in result:
+                result.append(lnk.recv)
+        return result 
+                
     _BUBBLES_DESTROYED = []
 
     ## First remove all destroyed bubbels from the linked list
     def delete_destroyed_bubbles_from_link_relations(self) -> None:
         links_to_be_removed = []
-        print('Vergleich:')
-        print(len(self.link_relations))
+        #SIEffect.debug('delete_destroyed_bubbles_from_link_relations : anzLinks={}'.format(len(self.link_relations)))
         i = 0
         for lnk in self.link_relations:
-            print(lnk.sender)
+            #SIEffect.debug('delete_destroyed_bubbles_from_link_relations : sender={}'.format(lnk.sender))
             if lnk.sender in self._BUBBLES_DESTROYED:
                 links_to_be_removed.append(i)
-                print('remove link')
+                #SIEffect.debug('delete_destroyed_bubbles_from_link_relations remove link')
                 print(i)
             i = i + 1
-        print('Vergleich fertig')
         links_to_be_removed.reverse()
         for i in links_to_be_removed:
             del self.link_relations[i]
 
+    # a bubble (sender_uuid) shall be linked to a receiver. 
+    # If den receiver is already linked to a bubble the sender is destroyed an the first linked bubble uuid
+    # will be returned. If the link is successfull, 0 ist returned
     def merge_link(self, sender_uuid: str, sender_attribute: str, receiver_uuid: str, receiver_attribute: str):
         if sender_uuid != "" and sender_attribute != "" and receiver_uuid != "" and receiver_attribute != "":
             self.delete_destroyed_bubbles_from_link_relations()
@@ -526,13 +546,12 @@ class SIEffect(PySI.Effect):
                 self.link_relations.append([sender_uuid, sender_attribute, receiver_uuid, receiver_attribute])
                 return 0
             else:
-                print("Bubble deleted:")
-                print(sender_uuid)
+                SIEffect.debug("merge_link: delete bubble {}".format(SIEffect.short_uuid(sender_uuid)))
                 self._BUBBLES_DESTROYED.append(sender_uuid)
-            print("Pruefung:")
+            print("merge_link check:")
             first = ''
             for lnk in self.link_relations:
-                print(lnk.sender)
+                SIEffect.debug("merge_link check link sender {}".format(SIEffect.short_uuid(lnk.sender)))
                 if first == '':
                     first = lnk.sender
             return first
@@ -540,27 +559,28 @@ class SIEffect(PySI.Effect):
 
     def relink_to_new_bubble(self, lasso_old_uuid, lasso_new_uuid):
         links_to_change = []
-        links_to_be_removed = []
-        i = 0
-        print('elink_to_new_bubble')
-        print(lasso_old_uuid)
+        #links_to_be_removed = []
+        #i = 0
+        #SIEffect.debug('relink_to_new_bubble self={} bubble old {} -> new {}'.format(SIEffect.short_uuid(self._uuid), SIEffect.short_uuid(lasso_old_uuid), SIEffect.short_uuid(lasso_new_uuid)))
         for lnk in self.link_relations:
-            print(lnk.sender)
+            #SIEffect.debug('relink_to_new_bubble check link {} -> {}'.format(SIEffect.short_uuid(lnk.sender), SIEffect.short_uuid(lnk.recv)))
             if lnk.sender in lasso_old_uuid:
-                print('gef')
-                links_to_change.append([lnk.sender_attrib, lnk.recv, lnk.recv_attrib])
-                links_to_be_removed.append(i)
-            i = i+1
-        print('anzahl changes')
-        print(len(links_to_change))
-        links_to_be_removed.reverse()
-        for i in links_to_be_removed:
-            del self.link_relations[i]
-        ret = len(links_to_change)
-        print('return')
-        print(ret)
+                #SIEffect.debug('relink_to_new_bubble link found link sender={} -> receiver {}'.format(SIEffect.short_uuid(lnk.sender), SIEffect.short_uuid(lnk.recv)))
+                links_to_change.append([lnk.sender, lnk.sender_attrib, lnk.recv, lnk.recv_attrib])
+                #links_to_be_removed.append(i)
+            #i = i+1
+        #SIEffect.debug('relink_to_new_bubble nr of changes = {}'.format(len(links_to_change)))
+        #links_to_be_removed.reverse()
+        #for i in links_to_be_removed:
+        #    del self.link_relations[i]
         for lnk in links_to_change:
-            self.create_link(lasso_new_uuid, lnk[0], lnk[1], lnk[2])
+            self.remove_link(lnk[0], lnk[1], lnk[2], lnk[2])
+        ret = len(links_to_change)
+        #print('return')
+        #print(ret)
+        for lnk in links_to_change:
+            SIEffect.debug('relink_to_new_bubble : create_link self={} -> new bubble {}'.format(SIEffect.short_uuid(self._uuid), SIEffect.short_uuid(lasso_new_uuid)))
+            self.create_link(lasso_new_uuid, lnk[1], lnk[2], lnk[3])
         return ret
 
     ## member function for emitting a linking action
@@ -671,6 +691,8 @@ class SIEffect(PySI.Effect):
     # @return None
     def delete(self) -> None:
         self.__signal_deletion__()
+        SIEffect.remove_from_registry(self.get_uuid())
+        print('delete {}'.format(SIEffect.short_uuid(self._uuid)))
 
     ## member function for creating a new region
     #
@@ -780,3 +802,57 @@ class SIEffect(PySI.Effect):
             'Line number: %s\n'
             'Line content: %s%s'
             % (RED_START, type(ex).__name__, parsed_file_name, str(user_line_no),  user_line_content.replace('\t', ''), COLOR_END))
+          
+          
+    @staticmethod
+    def add_to_registry(e):
+        if e.get_uuid() in SIEffect._regmap:
+            print("Registry: error: Key {} ist already registered!".format(SIEffect.short_uuid(e.get_uuid())))
+        else:
+            print("Registry: add_to_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(e.get_uuid()), type(e).__name__, e.regionname, e.name))
+            SIEffect._regmap[e.get_uuid()] = e
+        #SIEffect.print_registry()
+        
+    @staticmethod
+    def remove_from_registry(uuid):
+        if uuid not in SIEffect._regmap:
+            print("Registry error: Key {} ist not registered!".format(SIEffect.short_uuid(uuid)))
+        else:
+            del SIEffect._regmap[uuid]
+            print("Registry remove_from_registry {}".format(SIEffect.short_uuid(uuid)))
+        #SIEffect.print_registry()
+    
+    @staticmethod
+    def get_object_with(uuid):
+        return SIEffect._regmap[uuid]
+        
+    @staticmethod
+    def get_all_objects_extending_class(cl):
+        result = []
+        for value in SIEffect._regmap.values():
+            #SIEffect.debug("get_all_objects: value.class={}".format(type(value).__name__))
+            if isinstance(value, cl):
+                result.append(value)
+        return result
+        
+    @staticmethod
+    def print_registry():
+        for key,value in SIEffect._regmap.items():
+            SIEffect.debug("Registry: print_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(key), type(value).__name__, value.regionname, value.name))
+        
+    @staticmethod
+    def debug(msg):
+        print(msg)
+        
+    @staticmethod
+    def debug_uuids(msg, parent_uuid, self_uuid):
+        print(msg+' parent={}, self={}'.format(SIEffect.short_uuid(parent_uuid),SIEffect.short_uuid(self_uuid)))
+        
+    @staticmethod
+    def short_uuid(uuid):
+        i = uuid.find('-')
+        if i == -1:
+            return uuid
+        return uuid[0:i]
+    
+    

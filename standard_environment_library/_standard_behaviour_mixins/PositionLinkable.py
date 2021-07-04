@@ -15,6 +15,8 @@ class PositionLinkable(SIEffect):
 
     @SIEffect.on_link(SIEffect.RECEPTION, PySI.LinkingCapability.POSITION, PySI.LinkingCapability.POSITION)
     def set_position_from_position(self, rel_x, rel_y, abs_x, abs_y):
+        #SIEffect.debug('PositionLinkable.set_position_from_position self_uuid={} rel={},{} abs={},{}'.format(SIEffect.short_uuid(self._uuid), rel_x, rel_y, abs_x, abs_y))
+        #SIEffect.debug('PositionLinkable.position aabb[0]={},{},{}'.format(self.aabb[0].x,self.aabb[0].y, self.aabb[0].z))
         self.move(self.x + rel_x, self.y + rel_y)
 
         self.delta_x, self.delta_y = rel_x, rel_y
