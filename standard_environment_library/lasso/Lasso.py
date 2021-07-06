@@ -4,6 +4,7 @@ from plugins.E import E
 from plugins.standard_environment_library._standard_behaviour_mixins.Movable import Movable
 from plugins.standard_environment_library._standard_behaviour_mixins.Deletable import Deletable
 from functools import cmp_to_key
+from setuptools.dist import check_entry_points
 
 class Lasso(Deletable, Movable, SIEffect):
 	regiontype = PySI.EffectType.SI_CUSTOM
@@ -55,7 +56,7 @@ class Lasso(Deletable, Movable, SIEffect):
 		for p in self.shape:
 			points.append(p)
 		ret = Lasso.graham_scan(points)
-		#ret = Lasso.explode(ret, 1.1)
+		ret = Lasso.explode(ret, 1.3)
 		new_shape = PySI.PointVector()
 		for p in ret:
 			new_shape.append(p)
@@ -69,6 +70,7 @@ class Lasso(Deletable, Movable, SIEffect):
 		for p in points:
 			p.x = cx + (p.x - cx)*factor
 			p.y = cy + (p.y - cy)*factor
+		return points
 	
 	@staticmethod
 	def calculate_center(points):
