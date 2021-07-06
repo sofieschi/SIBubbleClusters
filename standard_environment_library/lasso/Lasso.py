@@ -43,12 +43,14 @@ class Lasso(Deletable, Movable, SIEffect):
 	# add additional points to the set of points of the hull of the bubble.
 	# Then recalculate the convex hull
 	def recalculate_hull(self, additional_points):
+		SIEffect.debug("recalculate_hull x,y={},{}".format(self.x, self.y))
 		# The additional_points are in absolute coordinates
-		# First they must be changed to relative
-		#additional_points_relative = []
-		#for p in additional_points:
-		#	additional_points_relative.append([p[0]-self.relative_x_pos(),p[1]-self.relative_y_pos()])
-		points = PySI.PointVector(additional_points)
+		# First they must be changed to relative coordinates relative to the origin x,y of the bubble,
+		# because the shape is defined als PointVector for coordinates relative to the origin x,y
+		additional_points_relative = []
+		for p in additional_points:
+			additional_points_relative.append([p[0]-self.x,p[1]-self.y])
+		points = PySI.PointVector(additional_points_relative)
 		for p in self.shape:
 			points.append(p)
 		ret = Lasso.graham_scan(points)

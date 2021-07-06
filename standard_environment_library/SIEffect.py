@@ -692,7 +692,7 @@ class SIEffect(PySI.Effect):
     def delete(self) -> None:
         self.__signal_deletion__()
         SIEffect.remove_from_registry(self.get_uuid())
-        print('delete {}'.format(SIEffect.short_uuid(self._uuid)))
+        SIEffect.debug('delete {}'.format(SIEffect.short_uuid(self._uuid)))
 
     ## member function for creating a new region
     #

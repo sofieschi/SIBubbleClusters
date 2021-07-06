@@ -58,21 +58,3 @@ class Lassoable(SIEffect):
         SIEffect.debug('LASSOABLE: set_position_from_position self={} rel={},{} abd={},{}'.format(SIEffect.short_uuid(self._uuid), rel_x, rel_y, abs_x, abs_y))
         self.move(self.x + rel_x, self.y + rel_y)
         self.delta_x, self.delta_y = rel_x, rel_y
-
-    # @SIEffect.on_enter('__bubble_loeschen__', SIEffect.EMISSION)
-    # def bubble_loeschen(self, parent):
-    #     if self.old_lasso_uuid != '':
-    #         SIEffect.debug('LASSOABLE: __bubble_loeschen__ emitted')
-    #         tmp_old = self.old_lasso_uuid
-    #         tmp_new = self.new_lasso_uuid
-    #         self.old_lasso_uuid = ''
-    #         self.new_lasso_uuid = ''
-    #         return tmp_old, tmp_new
-    #     return '', ''
-    #
-    # @SIEffect.on_enter('__bubble_loeschen__', SIEffect.RECEPTION)
-    # def relink_to_new_bubble2(self, lasso_old_uuid, lasso_new_uuid):
-    #     SIEffect.debug('LASSOABLE: __relink_to_new_bubble__ received')
-    #     nr_relinks = self.relink_to_new_bubble(lasso_old_uuid, lasso_new_uuid)
-    #     if nr_relinks > 0:
-    #         self.move(100,0)
