@@ -50,6 +50,7 @@ class Lasso(Deletable, Movable, SIEffect):
 		additional_points_relative = []
 		for p in additional_points:
 			additional_points_relative.append([p[0]-self.x,p[1]-self.y])
+			additional_points_relative.append([p[0]-self.x,p[1]-self.y]) # twice, because the convex hull algorithm has a bug, ignoring points
 		points = PySI.PointVector(additional_points_relative)
 		for p in self.shape:
 			points.append(p)

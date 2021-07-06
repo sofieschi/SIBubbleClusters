@@ -25,28 +25,55 @@ class Lassoable(SIEffect):
             if new_lasso_uuid != 0:
                 SIEffect.debug('LASSOABLE: for the merge, bubble {} shall be deleted and bubble link to {} should persist'.format(SIEffect.short_uuid(old_lasso_uuid), SIEffect.short_uuid(new_lasso_uuid)))
                 old_bubble = SIEffect.get_object_with(old_lasso_uuid)
+                new_bubble = SIEffect.get_object_with(new_lasso_uuid)
+
                 # get all connected objects of old bubble
                 # They must be relinked to new bubble
                 all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
                 SIEffect.debug('LASSOABLE: nr of lassoables={}'.format(len(all_lassoable)))
                 bboxes_points = []
                 for l in all_lassoable:
+                    # for each l, which is in the old bubble or the new bubble
+                    # the merged bubble hull schould contain all of l
+                    # To decide weather l is linked to old or new bubble, the variable add_to_bboxes_points is used
+                    add_to_bboxes_points = False
                     nr_relinks = l.relink_to_new_bubble(old_bubble.get_uuid(), new_lasso_uuid)
                     if nr_relinks > 0:
-                        new_bubble = SIEffect.get_object_with(new_lasso_uuid)
-                        # move the textfile to the new bubble
+                        # Since nr_of (changed) links is greater 0, the lassoable was linked to old bubble
+                        # and was relinked to new bubble
+                        #
+                        # The lassoable is moved towars the new bubble
+                        # All coordinates are in absolute coordinates
+                        ax,ay = Lassoable.get_absolute_point_on_line(0.8, l.absolute_x_pos(), l.absolute_y_pos(), new_bubble.absolute_x_pos(), new_bubble.absolute_y_pos())
+                        # 
+                        # for the move function, the new origin x,y must be calculated
+                        # Here an explanation for the special case of ax,ay = new_bubble.abs_xy
                         # condition: l.abs_xy = new_bubble.abs_xy
                         # => l.abs_xy = l.xy + l.aabb[0] = new_bubble.abs_xy
                         # => l.xy = new_bubble.abs_xy - l.aabb[0]
-                        l.move(new_bubble.absolute_x_pos() - l.aabb[0].x, new_bubble.absolute_y_pos() - l.aabb[0].y)
-                        # the new_bubble must change ist hull according to the newly linked textfiles
+                        l.move(ax - l.aabb[0].x, ay - l.aabb[0].y)
+                        add_to_bboxes_points = True
+                        #SIEffect.debug('LASSOABLE: move to {},{}'.format(new_bubble.x, new_bubble.y))
+                    else:
+                        if new_bubble.get_uuid() in l.get_all_lnk_sender():
+                            # lassoable is already connected to new bubble
+                            # To include it in the convex hull, too, add to bboxes_points
+                            add_to_bboxes_points = True
+                    if add_to_bboxes_points:
+                        # the new_bubble must change its hull according to the newly linked textfiles
                         # therefore prepare the bounding boxes points of the textfile for hull recalculation
                         # They are provided in absolute coordinates
                         for i in list(range(4)):
                             bboxes_points.append([l.x + l.aabb[i].x, l.y + l.aabb[i].y])
-                        #SIEffect.debug('LASSOABLE: move to {},{}'.format(new_bubble.x, new_bubble.y))
+                        
                 old_bubble.delete()
                 new_bubble.recalculate_hull(bboxes_points)
+
+    #Get the absolute point on the line between p and q given by a factor.
+    # If factor is 0, p is returned. If factor is 1, q is returned. 
+    @staticmethod
+    def get_absolute_point_on_line(factor, px, py, qx, qy):
+        return px + factor*(qx - px), py + factor*(qy - py)
 
     @SIEffect.on_leave(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_leave_recv(self, parent_uuid):

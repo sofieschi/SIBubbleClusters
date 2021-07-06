@@ -541,7 +541,7 @@ class SIEffect(PySI.Effect):
     # will be returned. If the link is successfull, 0 ist returned
     def merge_link(self, sender_uuid: str, sender_attribute: str, receiver_uuid: str, receiver_attribute: str):
         if sender_uuid != "" and sender_attribute != "" and receiver_uuid != "" and receiver_attribute != "":
-            self.delete_destroyed_bubbles_from_link_relations()
+            #self.delete_destroyed_bubbles_from_link_relations()
             if len(self.link_relations) == 0:
                 self.link_relations.append([sender_uuid, sender_attribute, receiver_uuid, receiver_attribute])
                 return 0
