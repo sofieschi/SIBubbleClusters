@@ -509,53 +509,26 @@ class SIEffect(PySI.Effect):
         for lnk in self.link_relations:
             if lnk.sender not in result:
                 result.append(lnk.sender)
-        return result        
+        return result  
+    
+    # get the linked objects, which are senders and extend a given class
+    # This method is used to get all linked bubbles for a textfile 
+    def get_all_lnk_sender_extending_class(self, cl):
+        uuid_list = self.get_all_lnk_sender()
+        linked_objects = []
+        
+        for s_uuid in uuid_list:
+            s = SIEffect.get_object_with(s_uuid)
+            if isinstance(s, cl):
+                linked_objects.append(s)
+        return linked_objects      
                
     def get_all_lnk_recv(self):
         result = []
         for lnk in self.link_relations:
             if lnk.recv not in result:
                 result.append(lnk.recv)
-        return result 
-                
-    _BUBBLES_DESTROYED = []
-
-    ## First remove all destroyed bubbels from the linked list
-    def delete_destroyed_bubbles_from_link_relations(self) -> None:
-        links_to_be_removed = []
-        #SIEffect.debug('delete_destroyed_bubbles_from_link_relations : anzLinks={}'.format(len(self.link_relations)))
-        i = 0
-        for lnk in self.link_relations:
-            #SIEffect.debug('delete_destroyed_bubbles_from_link_relations : sender={}'.format(lnk.sender))
-            if lnk.sender in self._BUBBLES_DESTROYED:
-                links_to_be_removed.append(i)
-                #SIEffect.debug('delete_destroyed_bubbles_from_link_relations remove link')
-                print(i)
-            i = i + 1
-        links_to_be_removed.reverse()
-        for i in links_to_be_removed:
-            del self.link_relations[i]
-
-    # a bubble (sender_uuid) shall be linked to a receiver. 
-    # If den receiver is already linked to a bubble the sender is destroyed an the first linked bubble uuid
-    # will be returned. If the link is successfull, 0 ist returned
-    def merge_link(self, sender_uuid: str, sender_attribute: str, receiver_uuid: str, receiver_attribute: str):
-        if sender_uuid != "" and sender_attribute != "" and receiver_uuid != "" and receiver_attribute != "":
-            #self.delete_destroyed_bubbles_from_link_relations()
-            if len(self.link_relations) == 0:
-                self.link_relations.append([sender_uuid, sender_attribute, receiver_uuid, receiver_attribute])
-                return 0
-            else:
-                SIEffect.debug("merge_link: delete bubble {}".format(SIEffect.short_uuid(sender_uuid)))
-                self._BUBBLES_DESTROYED.append(sender_uuid)
-            print("merge_link check:")
-            first = ''
-            for lnk in self.link_relations:
-                SIEffect.debug("merge_link check link sender {}".format(SIEffect.short_uuid(lnk.sender)))
-                if first == '':
-                    first = lnk.sender
-            return first
-        return 0
+        return result                     
 
     def relink_to_new_bubble(self, lasso_old_uuid, lasso_new_uuid):
         links_to_change = []
