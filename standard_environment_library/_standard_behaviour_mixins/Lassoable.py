@@ -83,12 +83,34 @@ class Lassoable(SIEffect):
                 for i in list(range(4)):
                     bboxes_points.append([l.x + l.aabb[i].x, l.y + l.aabb[i].y])       
         collided_bubble.delete()
-        new_bubble.recalculate_hull(bboxes_points)
+        new_bubble.recalculate_hull_with_additional_points(bboxes_points)
         
     
     def get_center(self):
         return self.absolute_x_pos() + 0.5 * self.get_region_width(), self.absolute_y_pos() + 0.5 * self.get_region_height()
         
+    @staticmethod
+    def intersect(l1,l2):
+        # we assume l1x < l2x. If not exchange arguments
+        l1x = l1.absolute_x_pos()
+        l2x = l2.absolute_x_pos()
+        if l1x > l2x:
+            return Lassoable.intersect(l2,l1)
+        l1y = l1.absolute_y_pos()
+        l2y = l2.absolute_y_pos()
+        e1x = l1x+l1.get_region_width()
+        e1y = l1y+l1.get_region_height()
+        e2x = l2x+l2.get_region_width()
+        e2y = l2y+l2.get_region_height()
+        #
+        if l2x > e1x:
+            return False
+        if e1y < l2y:
+            return False
+        if l1y > e2y:
+            return False
+        return True
+    
     #Get the absolute point on the line between p and q given by a factor.
     # If factor is 0, p is returned. If factor is 1, q is returned. 
     @staticmethod

@@ -54,10 +54,19 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		SIEffect.debug("Lasso.get_linked_lassoables : nr2 {}".format(len(lassoables)))
 		return lassoables
 	
-	
+	def recalculate_hull(self):
+		list_of_linked_lassoables = self.get_linked_lassoables()
+		if len(list_of_linked_lassoables) == 0:
+			return
+		bboxes_points = []
+		for l in list_of_linked_lassoables:
+			for i in list(range(4)):
+				bboxes_points.append([l.x + l.aabb[i].x, l.y + l.aabb[i].y])  
+		self.recalculate_hull_with_additional_points(bboxes_points, True)
+		
 	# add additional points to the set of points of the hull of the bubble.
 	# Then recalculate the convex hull
-	def recalculate_hull(self, additional_points):
+	def recalculate_hull_with_additional_points(self, additional_points, create_new=False):
 		SIEffect.debug("recalculate_hull x,y={},{}".format(self.x, self.y))
 		# The additional_points are in absolute coordinates
 		# First they must be changed to relative coordinates relative to the origin x,y of the bubble,
@@ -67,10 +76,11 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			additional_points_relative.append([p[0]-self.x,p[1]-self.y])
 			additional_points_relative.append([p[0]-self.x,p[1]-self.y]) # twice, because the convex hull algorithm has a bug, ignoring points
 		points = PySI.PointVector(additional_points_relative)
-		for p in self.shape:
-			points.append(p)
+		if not create_new:
+			for p in self.shape:
+				points.append(p)
 		ret = Lasso.graham_scan(points)
-		ret = Lasso.explode(ret, 1.3)
+		ret = Lasso.explode(ret, 1.1)
 		new_shape = PySI.PointVector()
 		minx = 100000.0
 		maxx = 0.0
@@ -124,28 +134,34 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		list_of_linked_lassoables = self.get_linked_lassoables()
 		n = len(list_of_linked_lassoables)
 		if n==0:
-			return
+			return # This bubble has no objects to spread
 		endpoints = self.get_circle_points(center_of_circle, radius, n)
 		workinglist_lassoables = list_of_linked_lassoables.copy()
-		#spreadinfos = []
+		# the moving_list is the list of all objects in the bubble, which intersect with another object in the bubble
+		# Only those object should move, so that they do not intersect anymore.
+		moving_list = Lasso.get_intersecting_lassoables(workinglist_lassoables)
 		for ep in endpoints:
 			l = Lasso.get_closest(workinglist_lassoables, ep)
+			SIEffect.debug("Lasso: workinglist_lassoables l={}, len={}".format(l, len(workinglist_lassoables)))
 			workinglist_lassoables.remove(l)
+			if l not in moving_list:
+				continue
 			lcenterx, lcentery = l.get_center()
-			#spreadinfos.append([l, lcenter, ep])
 			# we want to move the center of the lassoable to the point ep, but we have to move the
 			# origin x,y of the lassoable. Therefore we have to calculate back from the center.
 			dx = lcenterx - l.absolute_x_pos()
 			dy = lcentery - l.absolute_y_pos()
 			ax,ay = Lassoable.get_absolute_point_on_line(0.1, l.absolute_x_pos(), l.absolute_y_pos(), ep[0]-dx, ep[1]-dy)
 			l.move(ax - l.aabb[0].x, ay - l.aabb[0].y)
-		# explode bubble, too
+		self.recalculate_hull()
 	
 	# find the closest lassoable (by its center) in the workinglist_lassoables
 	# to the point ep
 	@staticmethod	
 	def get_closest(workinglist_lassoables, ep):
-		mind2 = 100000.0
+		if len(workinglist_lassoables) == 1:
+			return workinglist_lassoables[0]
+		mind2 = 10000000000.0
 		lassoable_with_min_distance = None
 		for l in workinglist_lassoables:
 			## calculate distance between l.get_center() and ep
@@ -167,6 +183,20 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			points.append([center_of_circle[0]+radius*math.sin(sector*i), center_of_circle[1]+radius*math.cos(sector*i)])
 		return points
 		
+	@staticmethod
+	def get_intersecting_lassoables(workinglist_lassoables):
+		moving_list = []
+		l = len(workinglist_lassoables)
+		for i in range(0,l):
+			l1 = workinglist_lassoables[i]
+			for j in range(i+1,l):
+				l2 = workinglist_lassoables[j]
+				if Lassoable.intersect(l1, l2):
+					moving_list.append(l1)
+					moving_list.append(l2)
+		SIEffect.debug("Lasso:get_intersecting_lassoables {} -> {}".format(l, len(moving_list)))			
+		return moving_list
+	
 	# returns the cross product of vector p1p3 and p1p2
 	# if p1p3 is clockwise from p1p2 it returns +ve value
 	# if p1p3 is anti-clockwise from p1p2 it returns -ve value
