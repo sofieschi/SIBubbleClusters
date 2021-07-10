@@ -3,10 +3,12 @@ from plugins.standard_environment_library.SIEffect import SIEffect
 from plugins.E import E
 from plugins.standard_environment_library._standard_behaviour_mixins.Movable import Movable
 from plugins.standard_environment_library._standard_behaviour_mixins.Deletable import Deletable
+from plugins.standard_environment_library._standard_behaviour_mixins.Mergeable import Mergeable
+from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
 from functools import cmp_to_key
-from setuptools.dist import check_entry_points
+import math 
 
-class Lasso(Deletable, Movable, SIEffect):
+class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	regiontype = PySI.EffectType.SI_CUSTOM
 	regionname = "__LASSO__"
 	region_display_name = "Lasso"
@@ -41,6 +43,18 @@ class Lasso(Deletable, Movable, SIEffect):
 			SIEffect.debug("Lasso.get_link_receiver : sender {}".format(SIEffect.short_uuid(sender)))
 		return result
 
+	def get_linked_lassoables(self):
+		lassoables = []
+		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
+		SIEffect.debug("Lasso.get_linked_lassoables : nr {}".format(len(all_lassoable)))
+		for l in all_lassoable:
+			SIEffect.debug("Lasso.get_linked_lassoables : nr3 {}".format(len(l.get_all_lnk_sender())))
+			if self.get_uuid() in l.get_all_lnk_sender():
+				lassoables.append(l)
+		SIEffect.debug("Lasso.get_linked_lassoables : nr2 {}".format(len(lassoables)))
+		return lassoables
+	
+	
 	# add additional points to the set of points of the hull of the bubble.
 	# Then recalculate the convex hull
 	def recalculate_hull(self, additional_points):
@@ -58,12 +72,25 @@ class Lasso(Deletable, Movable, SIEffect):
 		ret = Lasso.graham_scan(points)
 		ret = Lasso.explode(ret, 1.3)
 		new_shape = PySI.PointVector()
+		minx = 100000.0
+		maxx = 0.0
+		miny = 100000.0
+		maxy = 0.0
 		for p in ret:
 			new_shape.append(p)
-		
+			if p.x < minx:
+				minx = p.x
+			if p.x > maxx:
+				maxx = p.x
+			if p.y < miny:
+				miny = p.y
+			if p.y > maxy:
+				maxy = p.y
 		self.shape = new_shape
+		SIEffect.debug("new bounding box ={},{}  {},{}   {},{}".format(minx, miny, maxx, maxy, maxx-minx, maxy-miny))
 		#recalculate the bounding_box aabb
 
+	# method used to enlarge the bubble like an explosion from the center point of the bubble
 	@staticmethod
 	def explode(points, factor):
 		cx,cy = Lasso.calculate_center(points)
@@ -82,7 +109,64 @@ class Lasso(Deletable, Movable, SIEffect):
 			sumy += p.y
 			nr_of_points += 1.0
 		return sumx/nr_of_points, sumy/nr_of_points
-			
+	
+	# spread the bubble, ie enlarge the bubble by explosion and
+	# move textfield away from the center
+	def spread_bubble(self, factor):
+		# calculate radius of outer circle
+		w = self.get_region_width() 
+		h = self.get_region_height()
+		radius = 0.5*math.sqrt(w*w + h*h)
+		center_of_circle = [self.absolute_x_pos() + 0.5 * w, self.absolute_y_pos() + 0.5 * h]
+		# spread info for a lassoable is a list
+		# uuid, startx, starty, endpointx, endpointy
+		# create liste of spreadinfos
+		list_of_linked_lassoables = self.get_linked_lassoables()
+		n = len(list_of_linked_lassoables)
+		if n==0:
+			return
+		endpoints = self.get_circle_points(center_of_circle, radius, n)
+		workinglist_lassoables = list_of_linked_lassoables.copy()
+		#spreadinfos = []
+		for ep in endpoints:
+			l = Lasso.get_closest(workinglist_lassoables, ep)
+			workinglist_lassoables.remove(l)
+			lcenterx, lcentery = l.get_center()
+			#spreadinfos.append([l, lcenter, ep])
+			# we want to move the center of the lassoable to the point ep, but we have to move the
+			# origin x,y of the lassoable. Therefore we have to calculate back from the center.
+			dx = lcenterx - l.absolute_x_pos()
+			dy = lcentery - l.absolute_y_pos()
+			ax,ay = Lassoable.get_absolute_point_on_line(0.1, l.absolute_x_pos(), l.absolute_y_pos(), ep[0]-dx, ep[1]-dy)
+			l.move(ax - l.aabb[0].x, ay - l.aabb[0].y)
+		# explode bubble, too
+	
+	# find the closest lassoable (by its center) in the workinglist_lassoables
+	# to the point ep
+	@staticmethod	
+	def get_closest(workinglist_lassoables, ep):
+		mind2 = 100000.0
+		lassoable_with_min_distance = None
+		for l in workinglist_lassoables:
+			## calculate distance between l.get_center() and ep
+			lcenterx,lcentery = l.get_center()
+			dx = lcenterx-ep[0]
+			dy = lcentery-ep[1]
+			d2 = dx * dx + dy * dy 
+			#d2 = Lasso.distance_sq(l.get_center(),ep)
+			if (d2 < mind2):
+				lassoable_with_min_distance = l
+				mind2 = d2
+		return lassoable_with_min_distance
+		
+	def get_circle_points(self, center_of_circle, radius, n):
+		SIEffect.debug("Lasso:get_circle_points {}".format(n))
+		sector = (2.0 * math.pi) / n
+		points = []
+		for i in range(0,n):
+			points.append([center_of_circle[0]+radius*math.sin(sector*i), center_of_circle[1]+radius*math.cos(sector*i)])
+		return points
+		
 	# returns the cross product of vector p1p3 and p1p2
 	# if p1p3 is clockwise from p1p2 it returns +ve value
 	# if p1p3 is anti-clockwise from p1p2 it returns -ve value
@@ -177,3 +261,4 @@ class Lasso(Deletable, Movable, SIEffect):
 				stack.append(sorted_polar[i])
 				stack_size += 1
 			return stack
+

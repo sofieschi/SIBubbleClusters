@@ -1,5 +1,6 @@
 from libPySI import PySI
 from plugins.standard_environment_library.SIEffect import SIEffect
+from plugins.standard_environment_library.lasso.Lasso import Lasso
 
 
 class Cursor(SIEffect):
@@ -33,6 +34,19 @@ class Cursor(SIEffect):
         self.left_mouse_active = False
         self.right_mouse_active = False
 
+    def mouse_wheel_angle_px(self, px):
+        SIEffect.debug("mouse_wheel_angle_px {}".format(px))
+        
+    def mouse_wheel_angle_degrees(self, degrees):
+        SIEffect.debug("mouse_wheel_angle_degrees {}".format(degrees))
+        
+    def on_middle_mouse_click(self, is_active):
+        SIEffect.debug("on_middle_mouse_click {}".format(is_active))
+        if is_active:
+            lassos = SIEffect.get_all_objects_extending_class(Lasso)
+            for lasso in lassos:
+                lasso.spread_bubble(0.2)
+        
     @SIEffect.on_link(SIEffect.EMISSION, PySI.LinkingCapability.POSITION)
     def position(self):
         return self.x - self.last_x, self.y - self.last_y, self.x, self.y
@@ -58,6 +72,7 @@ class Cursor(SIEffect):
         return 0, 0, self._uuid
 
     def on_move_enter_emit(self, other):
+        SIEffect.debug("on_move_enter_emit other={}".format(other))
         if self.move_target is None:
             self.move_target = other
 
@@ -68,6 +83,12 @@ class Cursor(SIEffect):
 
     def on_move_continuous_emit(self, other):
         pass
+        #SIEffect.debug("move cursor {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
+        #l = SIEffect.get_all_objects_extending_class(Lasso)
+        #SIEffect.debug("move {}".format(len(l)))
+        #for ls in l:
+        #    SIEffect.debug("move lasso {}".format(ls.get_uuid()))
+        #    SIEffect.debug("move lasso {},{} {},{}".format(ls.absolute_x_pos(), ls.absolute_y_pos(), ls.get_region_width(), ls.get_region_height()))
 
     def on_move_leave_emit(self, other):
         if self.move_target is other:
@@ -115,9 +136,18 @@ class Cursor(SIEffect):
                     self.btn_target.on_click_leave_recv(self._uuid)
 
     def on_right_mouse_click(self, is_active):
-        self.right_mouse_active = is_active
+        SIEffect.debug("move cursor2 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
+        SIEffect.debug("1 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
+        l = SIEffect.get_all_objects_extending_class(Lasso)
+        SIEffect.debug("2 {}".format(len(l)))
+        for ls in l:
+            SIEffect.debug("3 {}".format(ls.get_uuid()))
+            SIEffect.debug("4 {},{} {},{}".format(ls.absolute_x_pos(), ls.absolute_y_pos(), ls.get_region_width(), ls.get_region_height()))
 
+        self.right_mouse_active = is_active
+        SIEffect.debug("move cursor22 {}".format(is_active))
         if is_active:
+            SIEffect.debug("move cursor23 {}".format(PySI.CollisionCapability.MOVE not in self.cap_emit.keys()))
             if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
                 self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_move_enter_emit, self.on_move_continuous_emit, self.on_move_leave_emit)
         elif PySI.CollisionCapability.MOVE in self.cap_emit.keys():

@@ -537,7 +537,7 @@ class SIEffect(PySI.Effect):
         #SIEffect.debug('relink_to_new_bubble self={} bubble old {} -> new {}'.format(SIEffect.short_uuid(self._uuid), SIEffect.short_uuid(lasso_old_uuid), SIEffect.short_uuid(lasso_new_uuid)))
         for lnk in self.link_relations:
             #SIEffect.debug('relink_to_new_bubble check link {} -> {}'.format(SIEffect.short_uuid(lnk.sender), SIEffect.short_uuid(lnk.recv)))
-            if lnk.sender in lasso_old_uuid:
+            if lnk.sender == lasso_old_uuid:
                 #SIEffect.debug('relink_to_new_bubble link found link sender={} -> receiver {}'.format(SIEffect.short_uuid(lnk.sender), SIEffect.short_uuid(lnk.recv)))
                 links_to_change.append([lnk.sender, lnk.sender_attrib, lnk.recv, lnk.recv_attrib])
                 #links_to_be_removed.append(i)

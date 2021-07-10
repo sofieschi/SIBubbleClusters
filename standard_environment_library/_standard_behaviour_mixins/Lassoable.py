@@ -1,6 +1,7 @@
 from libPySI import PySI
 from plugins.standard_environment_library.SIEffect import SIEffect
-from plugins.standard_environment_library.lasso.Lasso import Lasso
+#from plugins.standard_environment_library.lasso.Lasso import Lasso
+from plugins.standard_environment_library._standard_behaviour_mixins.Mergeable import Mergeable
 from plugins.E import E
 
 class Lassoable(SIEffect):
@@ -21,7 +22,7 @@ class Lassoable(SIEffect):
         # if the testfile is not already linked to collided_bubble.
         parent = SIEffect.get_object_with(parent_uuid)
         create_link = True
-        if isinstance(parent, Lasso):
+        if isinstance(parent, Mergeable):
             create_link = self.lasso_collision(parent)
         if create_link:
             self.create_link(parent.get_uuid(), PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
@@ -29,7 +30,7 @@ class Lassoable(SIEffect):
     # processes the lasso collision
     # True is returned, if the the link schould be created
     def lasso_collision(self, collided_bubble):
-        linked_bubbles = self.get_all_lnk_sender_extending_class(Lasso)
+        linked_bubbles = self.get_all_lnk_sender_extending_class(Mergeable)
         if collided_bubble not in linked_bubbles:
             if len(linked_bubbles) > 0:
                 # there is already a bubble linked, so we have to merge
@@ -85,6 +86,9 @@ class Lassoable(SIEffect):
         new_bubble.recalculate_hull(bboxes_points)
         
     
+    def get_center(self):
+        return self.absolute_x_pos() + 0.5 * self.get_region_width(), self.absolute_y_pos() + 0.5 * self.get_region_height()
+        
     #Get the absolute point on the line between p and q given by a factor.
     # If factor is 0, p is returned. If factor is 1, q is returned. 
     @staticmethod

@@ -15,6 +15,7 @@ class Movable(PositionLinkable, SIEffect):
 
     @SIEffect.on_enter(PySI.CollisionCapability.MOVE, SIEffect.RECEPTION)
     def on_move_enter_recv(self, cursor_id, link_attrib):
+        SIEffect.debug('on_move_enter_recv')
         if cursor_id != "" and link_attrib != "":
             self.create_link(cursor_id, link_attrib, self._uuid, link_attrib)
             self.is_under_user_control = True
