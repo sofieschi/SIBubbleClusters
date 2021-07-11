@@ -18,7 +18,11 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self.set_QML_path("Lasso.qml")
 		self.color = E.id.lasso_color
 		self._block_remove_link = False
-
+		self._sb_center_of_circle = []
+		self._sb_radius = 0.0
+		self._sb_endpoints = []
+		self._sb_lassoable_positions = []
+		
 	@SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.EMISSION)
 	def on_lasso_enter_emit(self, other):
 		return self._uuid
@@ -128,35 +132,43 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			nr_of_points += 1.0
 		return sumx/nr_of_points, sumy/nr_of_points
 	
+	def spread_bubble_init(self):
+		# calculate radius of outer circle
+		w = self.get_region_width() 
+		h = self.get_region_height()
+		self._sb_radius = 0.5*math.sqrt(w*w + h*h)
+		self._sb_center_of_circle = [self.absolute_x_pos() + 0.5 * w, self.absolute_y_pos() + 0.5 * h]
+		# spread info for a lassoable is a list
+		# uuid, startx, starty, endpointx, endpointy
+		# create liste of spreadinfos
+		self._sb_list_of_linked_lassoables = self.get_linked_lassoables()
+		n = len(self._sb_list_of_linked_lassoables)
+		if n==0:
+			return # This bubble has no objects to spread
+		self._sb_endpoints = self.get_circle_points(self._sb_center_of_circle, self._sb_radius, n)
+		self._sb_lassoable_positions = []
+		for l in self._sb_list_of_linked_lassoables:
+			self._sb_lassoable_positions.append([l, l.x, l.y])
+		
 	# spread the bubble, ie enlarge the bubble by explosion and
-	# move textfield away from the center
+	# move objects away from the center
 	def spread_bubble(self, factor):
 		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);	
 		for l in all_lassoable:
 			l.set_ignore_lasso_capability(True)
+		# move lassoables back to initial position
+		for lxy in self._sb_lassoable_positions:
+			lxy[0].move(lxy[1], lxy[2])		
 		self._spread_bubble_internal(factor)
 		for l in all_lassoable:
 			l.set_ignore_lasso_capability(False)
 
 	def _spread_bubble_internal(self, factor):		
-		# calculate radius of outer circle
-		w = self.get_region_width() 
-		h = self.get_region_height()
-		radius = 0.5*math.sqrt(w*w + h*h)
-		center_of_circle = [self.absolute_x_pos() + 0.5 * w, self.absolute_y_pos() + 0.5 * h]
-		# spread info for a lassoable is a list
-		# uuid, startx, starty, endpointx, endpointy
-		# create liste of spreadinfos
-		list_of_linked_lassoables = self.get_linked_lassoables()
-		n = len(list_of_linked_lassoables)
-		if n==0:
-			return # This bubble has no objects to spread
-		endpoints = self.get_circle_points(center_of_circle, radius, n)
-		workinglist_lassoables = list_of_linked_lassoables.copy()
+		workinglist_lassoables = self._sb_list_of_linked_lassoables.copy()
 		# the moving_list is the list of all objects in the bubble, which intersect with another object in the bubble
 		# Only those object should move, so that they do not intersect anymore.
 		moving_list = Lasso.get_intersecting_lassoables(workinglist_lassoables)
-		for ep in endpoints:
+		for ep in self._sb_endpoints:
 			l = Lasso.get_closest(workinglist_lassoables, ep)
 			SIEffect.debug("Lasso: workinglist_lassoables l={}, len={}".format(l, len(workinglist_lassoables)))
 			workinglist_lassoables.remove(l)
@@ -167,7 +179,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			# origin x,y of the lassoable. Therefore we have to calculate back from the center.
 			dx = lcenterx - l.absolute_x_pos()
 			dy = lcentery - l.absolute_y_pos()
-			ax,ay = Lassoable.get_absolute_point_on_line(0.1, l.absolute_x_pos(), l.absolute_y_pos(), ep[0]-dx, ep[1]-dy)
+			ax,ay = Lassoable.get_absolute_point_on_line(factor, l.absolute_x_pos(), l.absolute_y_pos(), ep[0]-dx, ep[1]-dy)
 			l.move(ax - l.aabb[0].x, ay - l.aabb[0].y)
 		self.recalculate_hull()
 	

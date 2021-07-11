@@ -33,12 +33,16 @@ class Cursor(SIEffect):
 
         self.left_mouse_active = False
         self.right_mouse_active = False
-
-    def mouse_wheel_angle_px(self, px):
-        SIEffect.debug("mouse_wheel_angle_px {}".format(px))
         
-    def mouse_wheel_angle_degrees(self, degrees):
-        SIEffect.debug("mouse_wheel_angle_degrees {}".format(degrees))
+        self._middle_mouse_blocked_lasso = None
+        self.abs_pos_x_at_middle_mouse_click_begin = None
+        self.abs_pos_y_at_middle_mouse_click_begin = None
+
+    #def mouse_wheel_angle_px(self, px):
+    #    SIEffect.debug("mouse_wheel_angle_px {}".format(px))
+        
+    #def mouse_wheel_angle_degrees(self, degrees):
+    #    SIEffect.debug("mouse_wheel_angle_degrees {}".format(degrees))
         
     def on_middle_mouse_click(self, is_active):
         SIEffect.debug("on_middle_mouse_click {}".format(is_active))
@@ -48,13 +52,33 @@ class Cursor(SIEffect):
                 if lasso.contains_point(self.absolute_x_pos(), self.absolute_y_pos()):
                     self._middle_mouse_blocked_lasso = lasso
                     lasso.set_block_remove_link(True) # workaround for the remove_link bug
-                    lasso.spread_bubble(0.2)
+                    self.abs_pos_x_at_middle_mouse_click_begin = self.absolute_x_pos()
+                    self.abs_pos_y_at_middle_mouse_click_begin = self.absolute_x_pos()
+                    if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
+                        SIEffect.debug("on_middle_mouse_click2 {}".format(is_active))
+                        self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_middle_mouse_move_enter_emit, self.on_middle_mouse_move_continuous_emit, self.on_middle_mouse_move_leave_emit)
+                    #spreading is done by on_middle_mouse_move_continuous_emit
+                    lasso.spread_bubble_init()
         else:
             # workaround for the remove_link bug
             if self._middle_mouse_blocked_lasso != None:
                 self._middle_mouse_blocked_lasso.set_block_remove_link(False)
                 self._middle_mouse_blocked_lasso = None
+            if PySI.CollisionCapability.MOVE in self.cap_emit.keys():
+                self.disable_effect(PySI.CollisionCapability.MOVE, True)
 
+    def on_middle_mouse_move_enter_emit(self, other):
+        SIEffect.debug("on_middle_mouse_move_enter_emit other={}".format(other))
+        return "", ""
+
+    def on_middle_mouse_move_continuous_emit(self, other):
+        factor = (self.absolute_x_pos() - self.abs_pos_x_at_middle_mouse_click_begin) / 300.0; # 300 pixel is factor 1.0
+        SIEffect.debug("on_middle_mouse_move_continuous_emit {}".format(factor))
+        self._middle_mouse_blocked_lasso.spread_bubble(factor)
+    
+    def on_middle_mouse_move_leave_emit(self, other):
+        return "", ""
+    
     @SIEffect.on_link(SIEffect.EMISSION, PySI.LinkingCapability.POSITION)
     def position(self):
         return self.x - self.last_x, self.y - self.last_y, self.x, self.y
@@ -90,8 +114,8 @@ class Cursor(SIEffect):
         return "", ""
 
     def on_move_continuous_emit(self, other):
-        pass
-        #SIEffect.debug("move cursor {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
+        #pass
+        SIEffect.debug("move cursor {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
         #l = SIEffect.get_all_objects_extending_class(Lasso)
         #SIEffect.debug("move {}".format(len(l)))
         #for ls in l:

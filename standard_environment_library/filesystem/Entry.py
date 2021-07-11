@@ -16,8 +16,8 @@ class Entry(Transportable, Movable, Lassoable, SIEffect):
 
         self.width = 130
         self.height = 125
-        self.icon_width = 65
-        self.icon_height = 75
+        self.icon_width = 35
+        self.icon_height = 40
         self.text_height = 50
         self.color = PySI.Color(255, 10, 0, 0)
         self.text_color = "FF000000"
