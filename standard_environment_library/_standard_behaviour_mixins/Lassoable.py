@@ -130,6 +130,10 @@ class Lassoable(SIEffect):
     def on_lasso_leave_recv(self, parent_uuid):
         if self.ignore_lasso_capability:
             return
+        parent = SIEffect.get_object_with(parent_uuid)
+        if isinstance(parent, Mergeable):
+            if parent.is_remove_link_blocked():
+                return # ignore. This is the remove_link bug
         SIEffect.debug('LASSOABLE: on_lasso_leave_recv parent={} self={}'.format(SIEffect.short_uuid(parent_uuid), SIEffect.short_uuid(self._uuid)))
         self.remove_link(parent_uuid, PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
 

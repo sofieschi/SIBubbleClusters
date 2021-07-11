@@ -17,6 +17,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		super(Lasso, self).__init__(shape, uuid, E.id.lasso_texture, Lasso.regiontype, Lasso.regionname, kwargs)
 		self.set_QML_path("Lasso.qml")
 		self.color = E.id.lasso_color
+		self._block_remove_link = False
 
 	@SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.EMISSION)
 	def on_lasso_enter_emit(self, other):
@@ -37,6 +38,13 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		#SIEffect.debug('LASSO.position x,y={},{}  self.x,y={},{}'.format(x,y, self.x, self.y))
 		return x, y, self.x, self.y
 
+
+	def set_block_remove_link(self, block):
+		self._block_remove_link = block
+		
+	def is_remove_link_blocked(self) -> bool:
+		return self._block_remove_link
+	
 	def get_link_sender(self):
 		result = self.get_all_lnk_sender()
 		for sender in result:
@@ -125,11 +133,11 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	def spread_bubble(self, factor):
 		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);	
 		for l in all_lassoable:
-            l.set_ignore_lasso_capability(True)
+			l.set_ignore_lasso_capability(True)
 		self._spread_bubble_internal(factor)
 		for l in all_lassoable:
-            l.set_ignore_lasso_capability(False)
-            
+			l.set_ignore_lasso_capability(False)
+
 	def _spread_bubble_internal(self, factor):		
 		# calculate radius of outer circle
 		w = self.get_region_width() 
@@ -216,7 +224,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		v2x = p2.x-p1.x
 		v2y = p2.y-p1.y
 		return v1x * v2y - v2x * v1y #Lasso.cross_product(p3.subtract(p1), p2.subtract(p1))
-	
+
 	# calculates the cross product of vector p1 and p2
 	# if p1 is clockwise from p2 wrt origin then it returns +ve value
 	# if p2 is anti-clockwise from p2 wrt origin then it returns -ve value

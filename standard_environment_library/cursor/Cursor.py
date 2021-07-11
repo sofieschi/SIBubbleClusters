@@ -45,8 +45,16 @@ class Cursor(SIEffect):
         if is_active:
             lassos = SIEffect.get_all_objects_extending_class(Lasso)
             for lasso in lassos:
-                lasso.spread_bubble(0.2)
-        
+                if lasso.contains_point(self.absolute_x_pos(), self.absolute_y_pos()):
+                    self._middle_mouse_blocked_lasso = lasso
+                    lasso.set_block_remove_link(True) # workaround for the remove_link bug
+                    lasso.spread_bubble(0.2)
+        else:
+            # workaround for the remove_link bug
+            if self._middle_mouse_blocked_lasso != None:
+                self._middle_mouse_blocked_lasso.set_block_remove_link(False)
+                self._middle_mouse_blocked_lasso = None
+
     @SIEffect.on_link(SIEffect.EMISSION, PySI.LinkingCapability.POSITION)
     def position(self):
         return self.x - self.last_x, self.y - self.last_y, self.x, self.y

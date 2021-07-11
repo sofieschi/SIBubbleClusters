@@ -344,6 +344,22 @@ class SIEffect(PySI.Effect):
     def absolute_y_pos(self) -> int:
         return self.y + self.aabb[0].y
 
+    # check if absolute point px,py is contained in the region
+    def contains_point(self, px, py) -> bool:
+        r1x = self.absolute_x_pos()
+        if px < r1x:
+            return False
+        r1y = self.absolute_y_pos()
+        if py < r1y:
+            return False
+        r2x = r1x+self.get_region_width()
+        if px > r2x:
+            return False
+        r2y = r1y+self.get_region_height()
+        if py > r2y:
+            return False
+        return True
+        
     ## member function for enabling the emission or reception of an effect
     #
     # This function is used in order to register collision events.
