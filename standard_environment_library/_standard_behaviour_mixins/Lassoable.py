@@ -43,7 +43,7 @@ class Lassoable(SIEffect):
                 # That means, do not link the collided_bubble, instead delete it
                 # and relink all links from collided_bubble to the new_bubble
                 new_bubble = linked_bubbles[0]
-                collided_bubble.disable_effect(E.id.lasso_capabiliy, True)
+                #collided_bubble.disable_effect(E.id.lasso_capabiliy, True)
                 self.merge_bubbles(collided_bubble, new_bubble)
                 return False
             else:
@@ -56,7 +56,6 @@ class Lassoable(SIEffect):
         all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
         SIEffect.debug('LASSOABLE: nr of lassoables={}'.format(len(all_lassoable)))
         bboxes_points = []
-        new_bubble.disable_effect()
         for l in all_lassoable:
             l.set_ignore_lasso_capability(True)
             # for each l, which is in the old bubble or the new bubble

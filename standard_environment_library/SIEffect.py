@@ -3,6 +3,7 @@ import sys
 from libPySI import PySI
 import inspect
 import os
+from pickle import NONE
 
 ## @package SIEffect
 # Documentation for this module / class
@@ -519,8 +520,9 @@ class SIEffect(PySI.Effect):
         
         for s_uuid in uuid_list:
             s = SIEffect.get_object_with(s_uuid)
-            if isinstance(s, cl):
-                linked_objects.append(s)
+            if s != None:
+                if isinstance(s, cl):
+                    linked_objects.append(s)
         return linked_objects      
                
     def get_all_lnk_recv(self):
@@ -780,25 +782,28 @@ class SIEffect(PySI.Effect):
     @staticmethod
     def add_to_registry(e):
         if e.get_uuid() in SIEffect._regmap:
-            print("Registry: error: Key {} ist already registered!".format(SIEffect.short_uuid(e.get_uuid())))
+            SIEffect.debug("Registry: error: Key {} ist already registered!".format(SIEffect.short_uuid(e.get_uuid())))
         else:
-            print("Registry: add_to_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(e.get_uuid()), type(e).__name__, e.regionname, e.name))
+            SIEffect.debug("Registry: add_to_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(e.get_uuid()), type(e).__name__, e.regionname, e.name))
             SIEffect._regmap[e.get_uuid()] = e
         #SIEffect.print_registry()
         
     @staticmethod
     def remove_from_registry(uuid):
         if uuid not in SIEffect._regmap:
-            print("Registry error: Key {} ist not registered!".format(SIEffect.short_uuid(uuid)))
+            SIEffect.debug("Registry error: Key {} ist not registered!".format(SIEffect.short_uuid(uuid)))
         else:
             del SIEffect._regmap[uuid]
-            print("Registry remove_from_registry {}".format(SIEffect.short_uuid(uuid)))
+            SIEffect.debug("Registry remove_from_registry {}".format(SIEffect.short_uuid(uuid)))
         #SIEffect.print_registry()
     
     @staticmethod
     def get_object_with(uuid):
-        return SIEffect._regmap[uuid]
-        
+        if uuid in SIEffect._regmap:
+            return SIEffect._regmap[uuid]
+        SIEffect.debug("Registry error: an object with uuid {} is not stored in the registry".format(SIEffect.short_uuid(uuid)))
+        return None
+    
     @staticmethod
     def get_all_objects_extending_class(cl):
         result = []
