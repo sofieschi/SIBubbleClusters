@@ -155,5 +155,9 @@
     <value id="lasso_texture" type="str">res/lasso.png</value>
     <value id="lasso_capabiliy" type="str">__ LASSO __</value>
 
+    <!-- Split -->
+    <value id="split_color" type="color">(255, 32, 32, 50)</value>
+    <value id="split_texture" type="str">res/split.png</value>
+    <value id="split_capabiliy" type="str">__ SPLIT __</value>
 
 </environment>
