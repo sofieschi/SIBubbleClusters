@@ -46,12 +46,12 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	def get_linked_lassoables(self):
 		lassoables = []
 		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
-		SIEffect.debug("Lasso.get_linked_lassoables : nr {}".format(len(all_lassoable)))
+		SIEffect.debug("Lasso.get_linked_lassoables : self_uuid={} nr_of_all_lassoable {}".format(SIEffect.short_uuid(self.get_uuid()), len(all_lassoable)))
 		for l in all_lassoable:
-			SIEffect.debug("Lasso.get_linked_lassoables : nr3 {}".format(len(l.get_all_lnk_sender())))
+			SIEffect.debug("Lasso.get_linked_lassoables : lassoable sender={}".format(l.get_all_lnk_sender()))
 			if self.get_uuid() in l.get_all_lnk_sender():
 				lassoables.append(l)
-		SIEffect.debug("Lasso.get_linked_lassoables : nr2 {}".format(len(lassoables)))
+		SIEffect.debug("Lasso.get_linked_lassoables : nr2 {}".format(lassoables))
 		return lassoables
 	
 	def recalculate_hull(self):
@@ -98,7 +98,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 				maxy = p.y
 		self.shape = new_shape
 		SIEffect.debug("new bounding box ={},{}  {},{}   {},{}".format(minx, miny, maxx, maxy, maxx-minx, maxy-miny))
-		#recalculate the bounding_box aabb
+		#recalculation of the bounding_box aabb is done automatically
 
 	# method used to enlarge the bubble like an explosion from the center point of the bubble
 	@staticmethod
@@ -123,6 +123,14 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	# spread the bubble, ie enlarge the bubble by explosion and
 	# move textfield away from the center
 	def spread_bubble(self, factor):
+		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);	
+		for l in all_lassoable:
+            l.set_ignore_lasso_capability(True)
+		self._spread_bubble_internal(factor)
+		for l in all_lassoable:
+            l.set_ignore_lasso_capability(False)
+            
+	def _spread_bubble_internal(self, factor):		
 		# calculate radius of outer circle
 		w = self.get_region_width() 
 		h = self.get_region_height()

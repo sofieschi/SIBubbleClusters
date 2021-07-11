@@ -11,9 +11,15 @@ class Lassoable(SIEffect):
     def __init__(self, shape=PySI.PointVector(), uuid="", r="", t="", s="", kwargs={}):
         super(Lassoable, self).__init__(shape, uuid, r, t, s, kwargs)
         self.source = "libStdSI"
+        self.ignore_lasso_capability = False
+
+    def set_ignore_lasso_capability(self, is_active):
+        self.ignore_lasso_capability = is_active
 
     @SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_enter_recv(self, parent_uuid):
+        if self.ignore_lasso_capability:
+            return
         # A textfile self collided with a bubble collided_bubble_uuid
         # If the textfile contains to another bubble (new_bubble), the collided_bubble (old_bubble) should be deleted
         # and all texfiles linked to collided_bubble (old_bubble) should be relinked to new_bubble.
@@ -37,6 +43,7 @@ class Lassoable(SIEffect):
                 # That means, do not link the collided_bubble, instead delete it
                 # and relink all links from collided_bubble to the new_bubble
                 new_bubble = linked_bubbles[0]
+                collided_bubble.disable_effect(E.id.lasso_capabiliy, True)
                 self.merge_bubbles(collided_bubble, new_bubble)
                 return False
             else:
@@ -49,7 +56,9 @@ class Lassoable(SIEffect):
         all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
         SIEffect.debug('LASSOABLE: nr of lassoables={}'.format(len(all_lassoable)))
         bboxes_points = []
+        new_bubble.disable_effect()
         for l in all_lassoable:
+            l.set_ignore_lasso_capability(True)
             # for each l, which is in the old bubble or the new bubble
             # the merged bubble hull schould contain all of l
             # To decide weather l is linked to old or new bubble, the variable add_to_bboxes_points is used
@@ -84,7 +93,8 @@ class Lassoable(SIEffect):
                     bboxes_points.append([l.x + l.aabb[i].x, l.y + l.aabb[i].y])       
         collided_bubble.delete()
         new_bubble.recalculate_hull_with_additional_points(bboxes_points)
-        
+        for l in all_lassoable:
+            l.set_ignore_lasso_capability(False)
     
     def get_center(self):
         return self.absolute_x_pos() + 0.5 * self.get_region_width(), self.absolute_y_pos() + 0.5 * self.get_region_height()
@@ -119,6 +129,8 @@ class Lassoable(SIEffect):
 
     @SIEffect.on_leave(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_leave_recv(self, parent_uuid):
+        if self.ignore_lasso_capability:
+            return
         SIEffect.debug('LASSOABLE: on_lasso_leave_recv parent={} self={}'.format(SIEffect.short_uuid(parent_uuid), SIEffect.short_uuid(self._uuid)))
         self.remove_link(parent_uuid, PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
 
