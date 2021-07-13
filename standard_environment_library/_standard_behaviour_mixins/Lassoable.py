@@ -109,7 +109,6 @@ class Lassoable(SIEffect):
         l2y = l2.absolute_y_pos()
         e1x = l1x+l1.get_region_width()
         e1y = l1y+l1.get_region_height()
-        e2x = l2x+l2.get_region_width()
         e2y = l2y+l2.get_region_height()
         #
         if l2x > e1x:
