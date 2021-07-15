@@ -22,7 +22,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self._sb_radius = 0.0
 		self._sb_endpoints = []
 		self._sb_lassoable_positions = []
-		
+	
 	@SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.EMISSION)
 	def on_lasso_enter_emit(self, other):
 		return self._uuid
@@ -60,15 +60,15 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
 		SIEffect.debug("Lasso.get_linked_lassoables : self_uuid={} nr_of_all_lassoable {}".format(SIEffect.short_uuid(self.get_uuid()), len(all_lassoable)))
 		for l in all_lassoable:
-			SIEffect.debug("Lasso.get_linked_lassoables : lassoable sender={}".format(l.get_all_lnk_sender()))
+			SIEffect.debug("Lasso.get_linked_lassoables : lassoable={} sender={}".format(SIEffect.short_uuid(l.get_uuid()), l.get_all_lnk_sender()))
 			if self.get_uuid() in l.get_all_lnk_sender():
 				lassoables.append(l)
-		SIEffect.debug("Lasso.get_linked_lassoables : nr2 {}".format(lassoables))
 		return lassoables
 	
 	def recalculate_hull(self):
 		list_of_linked_lassoables = self.get_linked_lassoables()
 		if len(list_of_linked_lassoables) == 0:
+			SIEffect.debug('no linked lassoables lasso={}'.format(SIEffect.short_uuid(self.get_uuid())))
 			return
 		bboxes_points = []
 		for l in list_of_linked_lassoables:

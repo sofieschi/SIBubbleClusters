@@ -18,6 +18,7 @@ class Lassoable(SIEffect):
 
     @SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_enter_recv(self, parent_uuid):
+        SIEffect.debug('LASSOABLE: on_lasso_enter_recv self={}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
         if self.ignore_lasso_capability:
             return
         # A textfile self collided with a bubble collided_bubble_uuid
@@ -28,10 +29,13 @@ class Lassoable(SIEffect):
         # if the testfile is not already linked to collided_bubble.
         parent = SIEffect.get_object_with(parent_uuid)
         create_link = True
-        if isinstance(parent, Mergeable):
+        parent_is_lasso = isinstance(parent, Mergeable)
+        if parent_is_lasso:
             create_link = self.lasso_collision(parent)
         if create_link:
             self.create_link(parent.get_uuid(), PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
+            if parent_is_lasso:
+                parent.recalculate_hull()
 
     # processes the lasso collision
     # True is returned, if the the link schould be created

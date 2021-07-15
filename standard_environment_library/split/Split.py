@@ -5,6 +5,7 @@ from plugins.standard_environment_library._standard_behaviour_mixins.Movable imp
 from plugins.standard_environment_library._standard_behaviour_mixins.Deletable import Deletable
 from plugins.standard_environment_library._standard_behaviour_mixins.Mergeable import Mergeable
 from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
+import math
 
 class Split(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM
@@ -12,44 +13,54 @@ class Split(Deletable, Movable, SIEffect):
     region_display_name = "Split"
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):
-        super(Split, self).__init__(Split.prepare_shape(shape), uuid, E.id.split_texture, Split.regiontype, Split.regionname, kwargs)
+        super(Split, self).__init__(self.prepare_shape(shape), uuid, E.id.split_texture, Split.regiontype, Split.regionname, kwargs)
         self.set_QML_path("Split.qml")
         self.color = E.id.split_color
-        splitpoints = [(p.x, p.y) for p in self.shape]
-        self.p1 = splitpoints[0]
-        self.p2 = splitpoints[1]
+        #splitpoints = [(p.x, p.y) for p in self.shape]
+        #SIEffect.debug("Split splitpoints={}".format(len(splitpoints)))
+        #for p in splitpoints:
+        #    SIEffect.debug("Split splitpoints={}".format(p))
+        #self.p1 = splitpoints[0]
+        #self.p2 = splitpoints[1]
+        self.p1 = [self._p1.x, self._p1.y]
+        self.p2 = [self._p2.x, self._p2.y]
         self.lv = [self.p2[0] - self.p1[0], self.p2[1] - self.p1[1]] 
-        self.normal = [self.lv[1], -self.lv[0]] 
+        self.normal = [self.lv[1], -self.lv[0]]
+        self.normal_length = math.sqrt(self.normal[0]*self.normal[0]+self.normal[1]*self.normal[1])
+        
         #self.lasso_to_split = None
         all_lassos = SIEffect.get_all_objects_extending_class(Mergeable);
         for lasso in all_lassos:
             set1, set2 = self.split_lasso(lasso)
             if len(set1)==0 or len(set2)==0:
                 # no split, so ignore
-                SIEffect.debug("Split no lasso={}".format(lasso))
-                continue
+                if len(set1)+len(set2) == 1:
+                    self.check_if_delete_lasso(lasso)
+                else:    
+                    SIEffect.debug("Split no lasso={}".format(lasso))
             else:
                 SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
+                factor = 30.0 / self.normal_length 
                 for l in set1:
-                    mx,my = l.x + self.normal[0], l.y + self.normal[1] 
+                    # remove l from lasso
+                    l.relink_to_new_bubble(lasso.get_uuid(), None)
+                    mx,my = l.x + factor*self.normal[0], l.y + factor*self.normal[1] 
                     l.move(mx,my)
                 for l in set2:
-                    mx,my = l.x - self.normal[0], l.y - self.normal[1] 
+                    mx,my = l.x - factor*self.normal[0], l.y - factor*self.normal[1] 
                     l.move(mx,my)
-            #r = [lasso.absolute_x_pos(), lasso.absolute_y_pos()]
-            #width = lasso.get_region_width()
-            #height = lasso.get_region_height()
-            #if Split.check_line_completely_intersects_rectangle(self.splitpoints[0], self.splitpoints[1], r, width, height):
-            #    self.split_lasso = lasso
-            #    break
-            #SIEffect.debug("Split: split_lasso={}".format(lasso))
+                lasso.recalculate_hull()
 
     # the curved shape will be changed to a straight line
-    @staticmethod 
-    def prepare_shape(points):
+    def prepare_shape(self, points):
         new_shape = PySI.PointVector()
-        new_shape.append(points[0])
-        new_shape.append(points[len(points)-1])
+        self._p1 = points[0]
+        self._p2 = points[len(points)-1]
+        #SIEffect.debug("Split splitpoints1={}".format(len(points)))
+        #SIEffect.debug("Split splitpoints1={},{}".format(self._p1.x, self._p1.y))
+        #SIEffect.debug("Split splitpoints1={},{}".format(self._p2.x, self._p2.y))
+        new_shape.append(self._p1)
+        new_shape.append(self._p2)
         return new_shape
 
     def split_lasso(self, lasso):
@@ -71,7 +82,14 @@ class Split(Deletable, Movable, SIEffect):
                 set2.append(lassoable)
         return set1,set2
     
-    # NOT USED
+    def check_if_delete_lasso(self,lasso):
+        r = [lasso.absolute_x_pos(), lasso.absolute_y_pos()]
+        width = lasso.get_region_width()
+        height = lasso.get_region_height()
+        if Split.check_line_completely_intersects_rectangle(self.p1, self.p2, r, width, height):
+            SIEffect.debug("Split: lasso {} deleted".format(SIEffect.short_uuid(lasso.get_uuid())))
+            lasso.delete()
+            
     # check if a line given by points p1 and p2 completely intersects a rectangle
     # The rectangle is given by the left upper point and width and height
     # Completely means both endpoints of the line are outside the rectangle 

@@ -114,8 +114,8 @@ class Cursor(SIEffect):
         return "", ""
 
     def on_move_continuous_emit(self, other):
-        #pass
-        SIEffect.debug("move cursor {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
+        pass
+        #SIEffect.debug("move cursor {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
         #l = SIEffect.get_all_objects_extending_class(Lasso)
         #SIEffect.debug("move {}".format(len(l)))
         #for ls in l:

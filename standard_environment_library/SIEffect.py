@@ -516,9 +516,8 @@ class SIEffect(PySI.Effect):
     def remove_link(self, sender_uuid: str, sender_attribute: str, receiver_uuid: str, receiver_attribute: str) -> None:
         if sender_uuid != "" and sender_attribute != "" and receiver_uuid != "" and receiver_attribute != "":
             lr = PySI.LinkRelation(sender_uuid, sender_attribute, receiver_uuid, receiver_attribute)
-
             if lr in self.link_relations:
-                SIEffect.debug('remove_link')
+                #SIEffect.debug('remove_link')
                 del self.link_relations[self.link_relations.index(lr)]
 
     def get_all_lnk_sender(self):
@@ -548,13 +547,15 @@ class SIEffect(PySI.Effect):
                 result.append(lnk.recv)
         return result                     
 
+    # relink from lasso_old to lasso_new
+    # If lasso_new is None, the link to old_lasso will just be removed
     def relink_to_new_bubble(self, lasso_old_uuid, lasso_new_uuid):
         links_to_change = []
         #links_to_be_removed = []
         #i = 0
         #SIEffect.debug('relink_to_new_bubble self={} bubble old {} -> new {}'.format(SIEffect.short_uuid(self._uuid), SIEffect.short_uuid(lasso_old_uuid), SIEffect.short_uuid(lasso_new_uuid)))
         for lnk in self.link_relations:
-            #SIEffect.debug('relink_to_new_bubble check link {} -> {}'.format(SIEffect.short_uuid(lnk.sender), SIEffect.short_uuid(lnk.recv)))
+            #SIEffect.debug('relink_to_new_bubble check link {},{},{},{}'.format(SIEffect.short_uuid(lnk.sender), lnk.sender_attrib, SIEffect.short_uuid(lnk.recv), lnk.recv_attrib))
             if lnk.sender == lasso_old_uuid:
                 #SIEffect.debug('relink_to_new_bubble link found link sender={} -> receiver {}'.format(SIEffect.short_uuid(lnk.sender), SIEffect.short_uuid(lnk.recv)))
                 links_to_change.append([lnk.sender, lnk.sender_attrib, lnk.recv, lnk.recv_attrib])
@@ -564,14 +565,18 @@ class SIEffect(PySI.Effect):
         #links_to_be_removed.reverse()
         #for i in links_to_be_removed:
         #    del self.link_relations[i]
+        #SIEffect.debug('relink_to_new_bubble nr1= {}'.format(len(self.link_relations)))
         for lnk in links_to_change:
-            self.remove_link(lnk[0], lnk[1], lnk[2], lnk[2])
+            self.remove_link(lnk[0], lnk[1], lnk[2], lnk[3])
+            #SIEffect.debug('relink_to_new_bubble remove_link  self={} -> old bubble {}'.format(SIEffect.short_uuid(self._uuid), SIEffect.short_uuid(lasso_old_uuid)))
+        #SIEffect.debug('relink_to_new_bubble nr2= {}'.format(len(self.link_relations)))
         ret = len(links_to_change)
         #print('return')
         #print(ret)
-        for lnk in links_to_change:
-            SIEffect.debug('relink_to_new_bubble : create_link self={} -> new bubble {}'.format(SIEffect.short_uuid(self._uuid), SIEffect.short_uuid(lasso_new_uuid)))
-            self.create_link(lasso_new_uuid, lnk[1], lnk[2], lnk[3])
+        if lasso_new_uuid != None:
+            for lnk in links_to_change:
+                #SIEffect.debug('relink_to_new_bubble : create_link self={} -> new bubble {}'.format(SIEffect.short_uuid(self._uuid), SIEffect.short_uuid(lasso_new_uuid)))
+                self.create_link(lasso_new_uuid, lnk[1], lnk[2], lnk[3])
         return ret
 
     ## member function for emitting a linking action
