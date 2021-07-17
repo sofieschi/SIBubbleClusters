@@ -40,7 +40,7 @@ class Split(Deletable, Movable, SIEffect):
                     SIEffect.debug("Split no lasso={}".format(lasso))
             else:
                 SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
-                factor = 30.0 / self.normal_length 
+                factor = 60.0 / self.normal_length 
                 # create new lasso for set1 lassoables
                 Split.create_new_lasso(lasso, set1)
                 for l in set1:

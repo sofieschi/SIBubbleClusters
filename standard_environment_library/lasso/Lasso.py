@@ -23,6 +23,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self._sb_endpoints = []
 		self._sb_lassoable_positions = []
 	
+	# For splitting a lasso must be created. It is done by this method
 	def create_new_lasso(self, bboxes_points) -> None:
 		#x,y = 300,300
 		#w,h = 100,100
@@ -99,14 +100,35 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			for p in self.shape:
 				points.append(p)
 		ret = Lasso.graham_scan(points)
-		ret = Lasso.explode(ret, 1.1)
+		minx, miny, w, h = Lasso.calculate_width_height(ret)
+		minwh = w
+		if h < w:
+			minwh = h
+		if minwh < 50:
+			factor = 1.5
+		elif minwh < 100:
+			factor = 1.4
+		elif minwh < 200:
+			factor = 1.3
+		elif minwh < 300:
+			factor = 1.1
+		else:
+			factor = 1.05
+		ret = Lasso.explode(ret, factor)
 		new_shape = PySI.PointVector()
+		for p in ret:
+			new_shape.append(p)
+		self.shape = new_shape
+		#SIEffect.debug("new bounding box ={},{}  {},{}   {},{}".format(minx, miny, maxx, maxy, maxx-minx, maxy-miny))
+		#recalculation of the bounding_box aabb is done automatically
+
+	@staticmethod
+	def calculate_width_height(points):
 		minx = 100000.0
 		maxx = 0.0
 		miny = 100000.0
 		maxy = 0.0
-		for p in ret:
-			new_shape.append(p)
+		for p in points:
 			if p.x < minx:
 				minx = p.x
 			if p.x > maxx:
@@ -115,9 +137,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 				miny = p.y
 			if p.y > maxy:
 				maxy = p.y
-		self.shape = new_shape
-		SIEffect.debug("new bounding box ={},{}  {},{}   {},{}".format(minx, miny, maxx, maxy, maxx-minx, maxy-miny))
-		#recalculation of the bounding_box aabb is done automatically
+		return minx, miny, maxx-minx, maxy-miny
 
 	# method used to enlarge the bubble like an explosion from the center point of the bubble
 	@staticmethod
