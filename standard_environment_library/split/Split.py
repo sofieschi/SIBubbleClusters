@@ -42,10 +42,10 @@ class Split(Deletable, Movable, SIEffect):
                 SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
                 factor = 30.0 / self.normal_length 
                 # create new lasso for set1 lassoables
-                SIEffect.debug("Split lasso={}".format(lasso))
-                #lasso.create_new_lasso()
+                Split.create_new_lasso(lasso, set1)
                 for l in set1:
-                    # remove l from lasso
+                    # remove l from lasso and do not conenct it to new lasso,
+                    # because there is no uuid of the new lasso
                     l.relink_to_new_bubble(lasso.get_uuid(), None)
                     mx,my = l.x + factor*self.normal[0], l.y + factor*self.normal[1] 
                     l.move(mx,my)
@@ -53,6 +53,14 @@ class Split(Deletable, Movable, SIEffect):
                     mx,my = l.x - factor*self.normal[0], l.y - factor*self.normal[1] 
                     l.move(mx,my)
                 lasso.recalculate_hull()
+
+    @staticmethod
+    def create_new_lasso(lasso, set1):
+        bboxes_points = []
+        for l in set1:
+            for i in list(range(4)):
+                bboxes_points.append([l.x + l.aabb[i].x, l.y + l.aabb[i].y])  
+        lasso.create_new_lasso(bboxes_points)
 
     # the curved shape will be changed to a straight line
     def prepare_shape(self, points):

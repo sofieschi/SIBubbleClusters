@@ -23,16 +23,12 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self._sb_endpoints = []
 		self._sb_lassoable_positions = []
 	
-	#def create_new_lasso(self) -> None:
-	#	SIEffect.debug("Lasso create_new_lasso={}".format(self))
-	#	x,y = 300,300
-	#	w,h = 100,100
-	#	r_shape = [[x,y], [x, y+h], [x+w, y+h], [x+w, y]]
-	#	kwargs = {"cwd": "", "parent": ""}
-	#	SIEffect.debug("Lasso create_new_lasso2={}".format(self))
-	#	#PySI.Startup.create_region_by_class(r_shape, ImageFile, kwargs)
-	#	#PySI.Startup.create_region_by_class(r_shape, Lasso, kwargs)
-	#	SIEffect.debug("Lasso create_new_lasso3={}".format(self))
+	def create_new_lasso(self, bboxes_points) -> None:
+		#x,y = 300,300
+		#w,h = 100,100
+		#r_shape = [[x,y], [x, y+h], [x+w, y+h], [x+w, y]]
+		kwargs = {"cwd": "", "parent": ""}
+		PySI.Startup.create_region_by_name(bboxes_points, Lasso.regionname, kwargs)
 
 	@SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.EMISSION)
 	def on_lasso_enter_emit(self, other):
