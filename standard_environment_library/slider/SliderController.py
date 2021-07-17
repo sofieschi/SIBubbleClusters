@@ -7,7 +7,7 @@ from plugins.standard_environment_library._standard_behaviour_mixins.Movable imp
 
 class SliderController(Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM_NON_DRAWABLE
-    regionname = E.id.slider_controller_name
+    #regionname = E.id.slider_controller_name
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):
         super(SliderController, self).__init__(shape, uuid, "", SliderController.regiontype, SliderController.regionname, kwargs)

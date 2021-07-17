@@ -14,11 +14,11 @@ class Entry(Transportable, Movable, Lassoable, SIEffect):
     def __init__(self, shape=PySI.PointVector(), uuid="", regiontype=PySI.EffectType.SI_ENTRY, regionname=PySI.EffectName.SI_STD_NAME_ENTRY, kwargs={}):
         super(Entry, self).__init__(shape, uuid, self.TEXTURE_PATH_NONE, regiontype, regionname, kwargs)
 
-        self.width = 130
-        self.height = 125
-        self.icon_width = 35
-        self.icon_height = 40
-        self.text_height = 50
+        self.width = 80
+        self.height = 80
+        self.icon_width = 20
+        self.icon_height = 20
+        self.text_height = 20
         self.color = PySI.Color(255, 10, 0, 0)
         self.text_color = "FF000000"
         self.path = str(kwargs["cwd"]) if len(kwargs.keys()) else ""
@@ -28,10 +28,10 @@ class Entry(Transportable, Movable, Lassoable, SIEffect):
         self.is_under_user_control = False
         self.is_open_entry_capability_blocked = False
         self.with_border = False
-
+        SIEffect.debug("Entry {}".format(self.path))
         if self.path != "":
             self.filename = self.path[self.path.rfind("/") + 1:]
-
+        SIEffect.debug("Entry {}".format(self.path))
         self.is_container_visible = True
 
         self.set_QML_data("text_height", self.text_height, PySI.DataType.INT)

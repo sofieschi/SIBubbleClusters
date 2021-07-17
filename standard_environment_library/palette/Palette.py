@@ -15,7 +15,7 @@ class Palette(Movable, SIEffect):
         self.color = E.id.palette_color
 
         self.as_selector = True
-        self.num_selectors_per_row = int(len(available_plugins) / 3) + 1
+        self.num_selectors_per_row = 2 # int(len(available_plugins) / 3) + 1
 
         if len(available_plugins) % self.num_selectors_per_row == 0:
             self.num_rows = len(available_plugins) / self.num_selectors_per_row

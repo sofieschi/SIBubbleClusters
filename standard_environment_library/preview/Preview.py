@@ -7,7 +7,7 @@ from plugins.standard_environment_library._standard_behaviour_mixins.Deletable i
 
 class Preview(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_PREVIEW
-    regionname = PySI.EffectName.SI_STD_NAME_PREVIEW
+    #regionname = PySI.EffectName.SI_STD_NAME_PREVIEW
     region_display_name = E.id.preview_display_name
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):

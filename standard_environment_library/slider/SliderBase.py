@@ -7,7 +7,7 @@ from plugins.E import E
 
 class SliderBase(SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM_NON_DRAWABLE
-    regionname = E.id.slider_base_name
+    #regionname = E.id.slider_base_name
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):
         super(SliderBase, self).__init__(shape, uuid, "", SliderBase.regiontype, SliderBase.regionname, kwargs)

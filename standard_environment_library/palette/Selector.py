@@ -21,8 +21,8 @@ class Selector(PositionLinkable, SIEffect):
 
         self.parent = kwargs["parent"]
 
-        self.img_width = 40
-        self.img_height = 40
+        self.img_width = 20
+        self.img_height = 20
 
         self.set_QML_data("img_path", self.target_texture_path, PySI.DataType.STRING)
         self.set_QML_data("visible", False, PySI.DataType.BOOL)

@@ -41,6 +41,9 @@ class Split(Deletable, Movable, SIEffect):
             else:
                 SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
                 factor = 30.0 / self.normal_length 
+                # create new lasso for set1 lassoables
+                SIEffect.debug("Split lasso={}".format(lasso))
+                #lasso.create_new_lasso()
                 for l in set1:
                     # remove l from lasso
                     l.relink_to_new_bubble(lasso.get_uuid(), None)

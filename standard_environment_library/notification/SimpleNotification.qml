@@ -15,7 +15,7 @@ Item
     }
 
     id: container
-    visible: true
+    visible: false
 
     Rectangle {
         id: rect

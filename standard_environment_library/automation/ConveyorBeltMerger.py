@@ -8,7 +8,7 @@ import math
 
 class ConveyorBeltMerger(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM
-    regionname = E.id.cb_merger_name
+    #regionname = E.id.cb_merger_name
     region_display_name = E.id.cb_merger_display_name
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):

@@ -2,7 +2,7 @@ from libPySI import PySI
 from plugins.standard_environment_library.filesystem.Entry import Entry
 from plugins.standard_environment_library.SIEffect import SIEffect
 from plugins.E import E
-
+from pathlib import Path
 from PIL import Image
 
 
@@ -15,7 +15,8 @@ class ImageFile(Entry):
         self.qml_path = self.set_QML_path("ImageFile.qml")
         self.is_in_preview = False
         self.image = True
-
+        self.path = str(Path.home())+"/Desktop/"+self.path
+        SIEffect.debug("ImageFile {}".format(self.path))
         self.img_width, self.img_height = Image.open(self.path).size if self.path != "" else (0, 0)
 
         self.set_QML_data("img_path", self.path, PySI.DataType.STRING)

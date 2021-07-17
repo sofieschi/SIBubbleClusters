@@ -7,7 +7,7 @@ from plugins.E import E
 
 class ConveyorBeltSplitter(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM
-    regionname = E.id.cb_splitter_name
+    #regionname = E.id.cb_splitter_name
     region_display_name = E.id.cb_splitter_display_name
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):

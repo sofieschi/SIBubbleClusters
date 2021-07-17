@@ -9,8 +9,8 @@ import re
 class Directory(Entry):
     regiontype = PySI.EffectType.SI_DIRECTORY
     regionname = PySI.EffectName.SI_STD_NAME_DIRECTORY
-    region_width = 130
-    region_height = 125
+    region_width = 80
+    region_height = 80
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):
         super(Directory, self).__init__(shape, uuid, Directory.regiontype, Directory.regionname, kwargs)

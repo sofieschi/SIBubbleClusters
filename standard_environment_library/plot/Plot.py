@@ -13,7 +13,7 @@ np.seterr(divide='ignore', invalid='ignore')  # optional for quenching annoying 
 
 class Plot(Deletable, Movable, SIEffect):
 	regiontype = PySI.EffectType.SI_CUSTOM
-	regionname = E.id.plot_name
+	#regionname = E.id.plot_name
 	region_display_name = E.id.plot_display_name
 
 	def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):

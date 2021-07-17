@@ -10,7 +10,7 @@ import time
 
 class ConveyorBelt(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM
-    regionname = "__ ConveyorBelt __"
+    #regionname = "__ ConveyorBelt __"
     region_display_name = "ConveyorBelt"
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):

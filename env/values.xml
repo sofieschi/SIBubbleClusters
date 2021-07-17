@@ -62,8 +62,8 @@
     <!-- Palette related constants -->
     <value id="palette_color" type="color">(255, 255, 255, 255)</value>
 
-    <value id="palette_selector_width" type="int">60</value>
-    <value id="palette_selector_height" type="int">120</value>
+    <value id="palette_selector_width" type="int">50</value>
+    <value id="palette_selector_height" type="int">70</value>
     <value id="palette_selector_x_offset" type="int">5</value>
     <value id="palette_selector_y_offset" type="int">5</value>
 

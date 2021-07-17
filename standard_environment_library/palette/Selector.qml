@@ -39,7 +39,7 @@ Item
         visible: false
 
         fontSizeMode: Text.Wrap
-        font.pixelSize: 18
+        font.pixelSize: 12
         color: "black"
         horizontalAlignment: Text.AlignHCenter
         anchors.top: parent.top

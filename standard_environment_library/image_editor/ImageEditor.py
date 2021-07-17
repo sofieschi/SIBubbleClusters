@@ -14,7 +14,7 @@ from PIL import Image
 
 class ImageEditor(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM
-    regionname = E.id.image_editor_name
+    #regionname = E.id.image_editor_name
     region_display_name = E.id.image_editor_display_name
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):

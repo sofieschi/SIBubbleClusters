@@ -7,7 +7,7 @@ from plugins.E import E
 
 class Terminal(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM
-    regionname = E.id.terminal_name
+    #regionname = E.id.terminal_name
     region_display_name = E.id.terminal_display_name
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):

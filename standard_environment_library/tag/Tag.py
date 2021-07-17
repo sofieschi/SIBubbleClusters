@@ -6,7 +6,7 @@ from plugins.E import E
 
 class Tag(Deletable, Movable, SIEffect):
 	regiontype = PySI.EffectType.SI_CUSTOM
-	regionname = E.id.tag_name
+	#regionname = 'E.id.tag_name
 	region_display_name = E.id.tag_display_name
 
 	def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):
