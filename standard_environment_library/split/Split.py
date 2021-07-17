@@ -5,12 +5,15 @@ from plugins.standard_environment_library._standard_behaviour_mixins.Movable imp
 from plugins.standard_environment_library._standard_behaviour_mixins.Deletable import Deletable
 from plugins.standard_environment_library._standard_behaviour_mixins.Mergeable import Mergeable
 from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
+from threading import Thread
+import time
 import math
 
 class Split(Deletable, Movable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM
     regionname = "__SPLIT__"
     region_display_name = "Split"
+    splitcounter = 1
 
     def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):
         super(Split, self).__init__(self.prepare_shape(shape), uuid, E.id.split_texture, Split.regiontype, Split.regionname, kwargs)
@@ -53,7 +56,20 @@ class Split(Deletable, Movable, SIEffect):
                     mx,my = l.x - factor*self.normal[0], l.y - factor*self.normal[1] 
                     l.move(mx,my)
                 lasso.recalculate_hull()
-
+        try:
+            t = Thread(target=self.delete_split, args=(2,))
+            t.start()
+            Split.splitcounter += 1
+        except:
+            SIEffect.debug("Start Thread failed")
+    
+    # Define a function for the thread
+    def delete_split(self, delay):
+        SIEffect.debug("Start Thread begin")
+        time.sleep(delay)
+        self.delete()
+        SIEffect.debug("Start Thread ended")
+      
     @staticmethod
     def create_new_lasso(lasso, set1):
         bboxes_points = []

@@ -1,7 +1,7 @@
 from libPySI import PySI
 from plugins.standard_environment_library.SIEffect import SIEffect
 from plugins.standard_environment_library.lasso.Lasso import Lasso
-
+from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
 
 class Cursor(SIEffect):
     regiontype = PySI.EffectType.SI_MOUSE_CURSOR
@@ -182,11 +182,18 @@ class Cursor(SIEffect):
             SIEffect.debug("move cursor23 {}".format(PySI.CollisionCapability.MOVE not in self.cap_emit.keys()))
             if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
                 self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_move_enter_emit, self.on_move_continuous_emit, self.on_move_leave_emit)
+            self.block_lassoable_events(False)
         elif PySI.CollisionCapability.MOVE in self.cap_emit.keys():
             self.disable_effect(PySI.CollisionCapability.MOVE, True)
             if self.move_target is not None:
                 self.move_target.on_move_leave_recv(*self.on_move_leave_emit(self.move_target))
-
+            self.block_lassoable_events(False)
+    
+    def block_lassoable_events(self, is_active):
+        all_lassoables = SIEffect.get_all_objects_extending_class(Lassoable)
+        for l in all_lassoables:
+            l.set_ignore_lasso_capability(is_active)
+        
     @SIEffect.on_continuous(PySI.CollisionCapability.ASSIGN, SIEffect.RECEPTION)
     def on_assign_continuous_recv(self, effect_to_assign, effect_display_name, kwargs):
         if self.left_mouse_active:
