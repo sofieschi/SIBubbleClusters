@@ -6,7 +6,9 @@ from plugins.standard_environment_library._standard_behaviour_mixins.Deletable i
 from plugins.standard_environment_library._standard_behaviour_mixins.Mergeable import Mergeable
 from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
 from functools import cmp_to_key
-import math 
+import math
+import numpy as np
+import splines
 
 class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	regiontype = PySI.EffectType.SI_CUSTOM
@@ -99,7 +101,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		additional_points_relative = []
 		for p in additional_points:
 			additional_points_relative.append([p[0]-self.x,p[1]-self.y])
-			additional_points_relative.append([p[0]-self.x,p[1]-self.y]) # twice, because the convex hull algorithm has a bug, ignoring points
+			#additional_points_relative.append([p[0]-self.x,p[1]-self.y]) # twice, because the convex hull algorithm has a bug, ignoring points
 		points = PySI.PointVector(additional_points_relative)
 		if not create_new:
 			for p in self.shape:
@@ -120,8 +122,13 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		else:
 			factor = 1.05
 		ret = Lasso.explode(ret, factor)
-		new_shape = PySI.PointVector()
+		# ret are Point3. We need List [x,y] for spline
+		sp = []
 		for p in ret:
+			sp.append([p.x,p.y])
+		sp = Lasso.calculate_spline_points(sp)
+		new_shape = PySI.PointVector()
+		for p in sp:
 			new_shape.append(p)
 		self.shape = new_shape
 		#SIEffect.debug("new bounding box ={},{}  {},{}   {},{}".format(minx, miny, maxx, maxy, maxx-minx, maxy-miny))
@@ -356,3 +363,22 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 				stack_size += 1
 			return stack
 
+	# Inspired from https://splines.readthedocs.io/en/latest/
+	# Get splines import by "python3 -m pip install splines"
+	@staticmethod
+	def calculate_spline_points(points):
+		#points = [(10.0, 10.0), (10.0,30.0), (30.0, 30.0), (30.0, 15.0)]
+		spline = splines.CatmullRom(points, endconditions='closed')
+		dots_per_second = 10
+		total_duration = spline.grid[-1] - spline.grid[0]
+		dots = int(total_duration * dots_per_second) + 1
+		times = spline.grid[0] + np.arange(dots) / dots_per_second
+		result = spline.evaluate(times).T
+		px = result[0]
+		py = result[1]
+		l = len(px)
+		rp = []
+		for i in range(l):
+			#print(" ({},{})".format(px[i], py[i]))
+			rp.append([px[i], py[i]])
+		return rp
