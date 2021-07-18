@@ -1,8 +1,6 @@
 from libPySI import PySI
 from plugins.standard_environment_library.SIEffect import SIEffect
 from plugins.standard_environment_library._standard_behaviour_mixins.PositionLinkable import PositionLinkable
-from plugins.E import E
-
 
 class Movable(PositionLinkable, SIEffect):
     regiontype = PySI.EffectType.SI_CUSTOM_NON_DRAWABLE
@@ -15,7 +13,8 @@ class Movable(PositionLinkable, SIEffect):
 
     @SIEffect.on_enter(PySI.CollisionCapability.MOVE, SIEffect.RECEPTION)
     def on_move_enter_recv(self, cursor_id, link_attrib):
-        SIEffect.debug('on_move_enter_recv')
+        if SIEffect.is_logging():
+            SIEffect.debug('Movable: on_move_enter_recv')
         if cursor_id != "" and link_attrib != "":
             self.create_link(cursor_id, link_attrib, self._uuid, link_attrib)
             self.is_under_user_control = True

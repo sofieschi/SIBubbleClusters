@@ -11,17 +11,32 @@ class Lassoable(SIEffect):
     def __init__(self, shape=PySI.PointVector(), uuid="", r="", t="", s="", kwargs={}):
         super(Lassoable, self).__init__(shape, uuid, r, t, s, kwargs)
         self.source = "libStdSI"
-        self.ignore_lasso_capability = False
+        self.recorded_events = None
 
     def set_ignore_lasso_capability(self, is_active):
-        self.ignore_lasso_capability = is_active
+        #SIEffect.debug("Lassoable set_ignore_lasso_capability {}".format(is_active))
+        if is_active:
+            if self.recorded_events == None:
+                self.recorded_events = {}
+        else:
+            for key,value in self.recorded_events.items():
+                #SIEffect.debug("Lassoable: self={} recorded_event={},{}".format(SIEffect.short_uuid(self.get_uuid()),SIEffect.short_uuid(key),value))
+                if value == 1: # enter event
+                    self.on_lasso_enter_recv_internal(key) # postponed event will be released now
+            self.recorded_events = None
 
     @SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_enter_recv(self, parent_uuid):
         if SIEffect.is_logging():
             SIEffect.debug('LASSOABLE: on_lasso_enter_recv self={}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
-        if self.ignore_lasso_capability:
+        if self.recorded_events != None:
+            #SIEffect.debug("Lassoable enter")
+            self.recorded_events[parent_uuid] = 1
             return
+        self.on_lasso_enter_recv_internal(parent_uuid)
+    
+    # 
+    def on_lasso_enter_recv_internal(self, parent_uuid):
         # A textfile self collided with a bubble collided_bubble_uuid
         # If the textfile contains to another bubble (new_bubble), the collided_bubble (old_bubble) should be deleted
         # and all texfiles linked to collided_bubble (old_bubble) should be relinked to new_bubble.
@@ -133,7 +148,9 @@ class Lassoable(SIEffect):
 
     @SIEffect.on_leave(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_leave_recv(self, parent_uuid):
-        if self.ignore_lasso_capability:
+        if self.recorded_events != None:
+            #SIEffect.debug("Lassoable leave")
+            self.recorded_events[parent_uuid] = 0
             return
         parent = SIEffect.get_object_with(parent_uuid)
         if isinstance(parent, Mergeable):

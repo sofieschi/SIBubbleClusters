@@ -191,7 +191,7 @@ class Cursor(SIEffect):
                 SIEffect.debug("move cursor23 {}".format(PySI.CollisionCapability.MOVE not in self.cap_emit.keys()))
             if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
                 self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_move_enter_emit, self.on_move_continuous_emit, self.on_move_leave_emit)
-            self.block_lassoable_events(False)
+            self.block_lassoable_events(True)
         elif PySI.CollisionCapability.MOVE in self.cap_emit.keys():
             self.disable_effect(PySI.CollisionCapability.MOVE, True)
             if self.move_target is not None:

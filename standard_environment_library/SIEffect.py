@@ -847,12 +847,11 @@ class SIEffect(PySI.Effect):
         
     @staticmethod
     def is_logging() -> bool:
-        return True
+        return False
     
     @staticmethod
     def debug(msg):
-        pass
-        #print(msg)
+        print(msg)
         
     @staticmethod
     def debug_uuids(msg, parent_uuid, self_uuid):
