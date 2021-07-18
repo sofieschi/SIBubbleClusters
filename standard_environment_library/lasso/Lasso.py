@@ -6,9 +6,11 @@ from plugins.standard_environment_library._standard_behaviour_mixins.Deletable i
 from plugins.standard_environment_library._standard_behaviour_mixins.Mergeable import Mergeable
 from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
 from functools import cmp_to_key
+from operator import attrgetter
 import math
 import numpy as np
 import splines
+import random
 
 class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	regiontype = PySI.EffectType.SI_CUSTOM
@@ -24,6 +26,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self._sb_radius = 0.0
 		self._sb_endpoints = []
 		self._sb_lassoable_positions = []
+		self.collapse_status = 0  # 1 = collapsed, 2 = expanded, 0 = inbetween 
 	
 	# For splitting a lasso must be created. It is done by this method
 	def create_new_lasso(self, bboxes_points) -> None:
@@ -170,6 +173,68 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			sumy += p.y
 			nr_of_points += 1.0
 		return sumx/nr_of_points, sumy/nr_of_points
+	
+	def collapse_or_expand_bubble(self):
+		SIEffect.debug("collapse_status={}".format(self.collapse_status))
+		if self.collapse_status == 2: # 1 collapsed, 2 expanded, 0 inbetween
+			self.collapse_bubble()
+		else:
+			self.expand_bubble()
+
+	def collapse_bubble(self):
+		SIEffect.debug("collapse")
+		linked_lassoables = self.get_linked_lassoables()
+		w = self.get_region_width() 
+		h = self.get_region_height()
+		centerx, centery = self.absolute_x_pos() + 0.5 * w, self.absolute_y_pos() + 0.5 * h
+		for l in linked_lassoables:
+			epx = centerx + random.randint(-20, 20)
+			epy = centery + random.randint(-20, 20)
+			# we want to move the center of the lassoable to the center of the bubble, but we have to move the
+			# origin x,y of the lassoable. Therefore we have to calculate back from the center.
+			lcenterx, lcentery = l.get_center()
+			dx = lcenterx - l.absolute_x_pos()
+			dy = lcentery - l.absolute_y_pos()
+			ax,ay = epx-dx, epy-dy
+			l.move(ax - l.aabb[0].x, ay - l.aabb[0].y)
+		self.recalculate_hull()
+		self.collapse_status = 1
+
+	def expand_bubble(self):
+		SIEffect.debug("expand")
+		linked_lassoables = self.get_linked_lassoables()
+		w = self.get_region_width() 
+		h = self.get_region_height()
+		centerx, centery = self.absolute_x_pos() + 0.5 * w, self.absolute_y_pos() + 0.5 * h
+		sorted(linked_lassoables, key=attrgetter('filename'))
+		n = len(linked_lassoables)
+		grid_width = Lasso.get_grid_width(n)
+		i = 0 
+		epy = centery
+		dh = -10.0  # the height of the row (-10.0, so that it is 0.0 for the first row
+		for row in range(10):
+			epy += dh + 10.0
+			epx = centerx
+			dh = 0 # reset to 0, so that it can be recalculated in the next line 
+			for col in range(grid_width):
+				if i >= n:
+					break
+				l = linked_lassoables[i]
+				i += 1
+				l.move(epx - l.aabb[0].x, epy - l.aabb[0].y)
+				epx += l.get_region_width() + 10.0
+				if dh < l.get_region_height():
+					dh = l.get_region_height()
+		self.recalculate_hull()
+		self.collapse_status = 2
+	
+	# since the expanded bubble should be more squared than a thin rectangle, wo calculate the grid width
+	@staticmethod
+	def get_grid_width(n):
+		for i in range(1,10):
+			if i*i >= n:
+				return i
+		return 10
 	
 	def spread_bubble_init(self):
 		# calculate radius of outer circle

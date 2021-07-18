@@ -51,21 +51,37 @@ class Cursor(SIEffect):
             lassos = SIEffect.get_all_objects_extending_class(Lasso)
             for lasso in lassos:
                 if lasso.contains_point(self.absolute_x_pos(), self.absolute_y_pos()):
+                    #lasso.collapse_bubble()
                     self._middle_mouse_blocked_lasso = lasso
                     lasso.set_block_remove_link(True) # workaround for the remove_link bug
                     self.abs_pos_x_at_middle_mouse_click_begin = self.absolute_x_pos()
                     self.abs_pos_y_at_middle_mouse_click_begin = self.absolute_x_pos()
-                    if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
-                        if SIEffect.is_logging():
-                            SIEffect.debug("on_middle_mouse_click2 {}".format(is_active))
-                        self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_middle_mouse_move_enter_emit, self.on_middle_mouse_move_continuous_emit, self.on_middle_mouse_move_leave_emit)
-                    #spreading is done by on_middle_mouse_move_continuous_emit
-                    lasso.spread_bubble_init()
+                    self.morph_bubble(lasso, True)
+                    break
         else:
             # workaround for the remove_link bug
             if self._middle_mouse_blocked_lasso != None:
                 self._middle_mouse_blocked_lasso.set_block_remove_link(False)
+                self.morph_bubble(self._middle_mouse_blocked_lasso, False)
                 self._middle_mouse_blocked_lasso = None
+
+    def morph_bubble(self, lasso, is_active):
+        if is_active:
+            lasso.collapse_or_expand_bubble()
+            
+        else:
+            pass
+
+    # This is for the spread tool and should be used instead of morp_bubble
+    def morph_bubble2(self, lasso, is_active):
+        if is_active:
+            if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
+                if SIEffect.is_logging():
+                    SIEffect.debug("on_middle_mouse_click2 {}".format(is_active))
+                self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_middle_mouse_move_enter_emit, self.on_middle_mouse_move_continuous_emit, self.on_middle_mouse_move_leave_emit)
+                #spreading is done by on_middle_mouse_move_continuous_emit
+                lasso.spread_bubble_init()
+        else:
             if PySI.CollisionCapability.MOVE in self.cap_emit.keys():
                 self.disable_effect(PySI.CollisionCapability.MOVE, True)
 

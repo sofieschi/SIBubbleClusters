@@ -54,6 +54,7 @@ class Lassoable(SIEffect):
             self.create_link(parent_uuid, PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
             if parent_is_lasso:
                 parent.recalculate_hull()
+                parent.collapse_status = 0 # 0 = not expanded not collapsed
 
     # processes the lasso collision
     # True is returned, if the the link schould be created
