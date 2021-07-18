@@ -3,7 +3,6 @@ import sys
 from libPySI import PySI
 import inspect
 import os
-from pickle import NONE
 
 ## @package SIEffect
 # Documentation for this module / class
@@ -688,7 +687,8 @@ class SIEffect(PySI.Effect):
     def delete(self) -> None:
         self.__signal_deletion__()
         SIEffect.remove_from_registry(self.get_uuid())
-        SIEffect.debug('delete {}'.format(SIEffect.short_uuid(self._uuid)))
+        if SIEffect.is_logging():
+            SIEffect.debug('delete {}'.format(SIEffect.short_uuid(self._uuid)))
 
     ## member function for creating a new region
     #
@@ -803,26 +803,31 @@ class SIEffect(PySI.Effect):
     @staticmethod
     def add_to_registry(e):
         if e.get_uuid() in SIEffect._regmap:
-            SIEffect.debug("Registry: error: Key {} ist already registered!".format(SIEffect.short_uuid(e.get_uuid())))
+            if SIEffect.is_logging():
+                SIEffect.debug("Registry: error: Key {} ist already registered!".format(SIEffect.short_uuid(e.get_uuid())))
         else:
-            SIEffect.debug("Registry: add_to_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(e.get_uuid()), type(e).__name__, e.regionname, e.name))
+            if SIEffect.is_logging():
+                SIEffect.debug("Registry: add_to_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(e.get_uuid()), type(e).__name__, e.regionname, e.name))
             SIEffect._regmap[e.get_uuid()] = e
         #SIEffect.print_registry()
         
     @staticmethod
     def remove_from_registry(uuid):
         if uuid not in SIEffect._regmap:
-            SIEffect.debug("Registry error: Key {} ist not registered!".format(SIEffect.short_uuid(uuid)))
+            if SIEffect.is_logging():
+                SIEffect.debug("Registry error: Key {} ist not registered!".format(SIEffect.short_uuid(uuid)))
         else:
             del SIEffect._regmap[uuid]
-            SIEffect.debug("Registry remove_from_registry {}".format(SIEffect.short_uuid(uuid)))
+            if SIEffect.is_logging():
+                SIEffect.debug("Registry remove_from_registry {}".format(SIEffect.short_uuid(uuid)))
         #SIEffect.print_registry()
     
     @staticmethod
     def get_object_with(uuid):
         if uuid in SIEffect._regmap:
             return SIEffect._regmap[uuid]
-        SIEffect.debug("Registry error: an object with uuid {} is not stored in the registry".format(SIEffect.short_uuid(uuid)))
+        if SIEffect.is_logging():
+            SIEffect.debug("Registry error: an object with uuid {} is not stored in the registry".format(SIEffect.short_uuid(uuid)))
         return None
     
     @staticmethod
@@ -837,15 +842,22 @@ class SIEffect(PySI.Effect):
     @staticmethod
     def print_registry():
         for key,value in SIEffect._regmap.items():
-            SIEffect.debug("Registry: print_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(key), type(value).__name__, value.regionname, value.name))
+            if SIEffect.is_logging():
+                SIEffect.debug("Registry: print_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(key), type(value).__name__, value.regionname, value.name))
         
     @staticmethod
+    def is_logging() -> bool:
+        return True
+    
+    @staticmethod
     def debug(msg):
-        print(msg)
+        pass
+        #print(msg)
         
     @staticmethod
     def debug_uuids(msg, parent_uuid, self_uuid):
-        print(msg+' parent={}, self={}'.format(SIEffect.short_uuid(parent_uuid),SIEffect.short_uuid(self_uuid)))
+        if SIEffect.is_logging():
+            SIEffect.debug(msg+' parent={}, self={}'.format(SIEffect.short_uuid(parent_uuid),SIEffect.short_uuid(self_uuid)))
         
     @staticmethod
     def short_uuid(uuid):

@@ -45,7 +45,8 @@ class Cursor(SIEffect):
     #    SIEffect.debug("mouse_wheel_angle_degrees {}".format(degrees))
         
     def on_middle_mouse_click(self, is_active):
-        SIEffect.debug("on_middle_mouse_click {}".format(is_active))
+        if SIEffect.is_logging():
+            SIEffect.debug("on_middle_mouse_click {}".format(is_active))
         if is_active:
             lassos = SIEffect.get_all_objects_extending_class(Lasso)
             for lasso in lassos:
@@ -55,7 +56,8 @@ class Cursor(SIEffect):
                     self.abs_pos_x_at_middle_mouse_click_begin = self.absolute_x_pos()
                     self.abs_pos_y_at_middle_mouse_click_begin = self.absolute_x_pos()
                     if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
-                        SIEffect.debug("on_middle_mouse_click2 {}".format(is_active))
+                        if SIEffect.is_logging():
+                            SIEffect.debug("on_middle_mouse_click2 {}".format(is_active))
                         self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_middle_mouse_move_enter_emit, self.on_middle_mouse_move_continuous_emit, self.on_middle_mouse_move_leave_emit)
                     #spreading is done by on_middle_mouse_move_continuous_emit
                     lasso.spread_bubble_init()
@@ -68,12 +70,14 @@ class Cursor(SIEffect):
                 self.disable_effect(PySI.CollisionCapability.MOVE, True)
 
     def on_middle_mouse_move_enter_emit(self, other):
-        SIEffect.debug("on_middle_mouse_move_enter_emit other={}".format(other))
+        if SIEffect.is_logging():
+            SIEffect.debug("on_middle_mouse_move_enter_emit other={}".format(other))
         return "", ""
 
     def on_middle_mouse_move_continuous_emit(self, other):
         factor = (self.absolute_x_pos() - self.abs_pos_x_at_middle_mouse_click_begin) / 300.0; # 300 pixel is factor 1.0
-        SIEffect.debug("on_middle_mouse_move_continuous_emit {}".format(factor))
+        if SIEffect.is_logging():
+            SIEffect.debug("on_middle_mouse_move_continuous_emit {}".format(factor))
         self._middle_mouse_blocked_lasso.spread_bubble(factor)
     
     def on_middle_mouse_move_leave_emit(self, other):
@@ -104,7 +108,8 @@ class Cursor(SIEffect):
         return 0, 0, self._uuid
 
     def on_move_enter_emit(self, other):
-        SIEffect.debug("on_move_enter_emit other={}".format(other))
+        if SIEffect.is_logging():
+            SIEffect.debug("on_move_enter_emit other={}".format(other))
         if self.move_target is None:
             self.move_target = other
 
@@ -168,18 +173,22 @@ class Cursor(SIEffect):
                     self.btn_target.on_click_leave_recv(self._uuid)
 
     def on_right_mouse_click(self, is_active):
-        SIEffect.debug("move cursor2 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
-        SIEffect.debug("1 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
+        if SIEffect.is_logging():
+            SIEffect.debug("move cursor2 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
+            SIEffect.debug("1 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
         l = SIEffect.get_all_objects_extending_class(Lasso)
-        SIEffect.debug("2 {}".format(len(l)))
-        for ls in l:
-            SIEffect.debug("3 {}".format(ls.get_uuid()))
-            SIEffect.debug("4 {},{} {},{}".format(ls.absolute_x_pos(), ls.absolute_y_pos(), ls.get_region_width(), ls.get_region_height()))
+        if SIEffect.is_logging():
+            SIEffect.debug("2 {}".format(len(l)))
+            for ls in l:
+                SIEffect.debug("3 {}".format(ls.get_uuid()))
+                SIEffect.debug("4 {},{} {},{}".format(ls.absolute_x_pos(), ls.absolute_y_pos(), ls.get_region_width(), ls.get_region_height()))
 
         self.right_mouse_active = is_active
-        SIEffect.debug("move cursor22 {}".format(is_active))
+        if SIEffect.is_logging():
+            SIEffect.debug("move cursor22 {}".format(is_active))
         if is_active:
-            SIEffect.debug("move cursor23 {}".format(PySI.CollisionCapability.MOVE not in self.cap_emit.keys()))
+            if SIEffect.is_logging():
+                SIEffect.debug("move cursor23 {}".format(PySI.CollisionCapability.MOVE not in self.cap_emit.keys()))
             if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
                 self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_move_enter_emit, self.on_move_continuous_emit, self.on_move_leave_emit)
             self.block_lassoable_events(False)

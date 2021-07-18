@@ -59,16 +59,19 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	
 	def get_link_sender(self):
 		result = self.get_all_lnk_sender()
-		for sender in result:
-			SIEffect.debug("Lasso.get_link_receiver : sender {}".format(SIEffect.short_uuid(sender)))
+		if SIEffect.is_logging():
+			for sender in result:
+				SIEffect.debug("Lasso.get_link_receiver : sender {}".format(SIEffect.short_uuid(sender)))
 		return result
 
 	def get_linked_lassoables(self):
 		lassoables = []
 		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
-		SIEffect.debug("Lasso.get_linked_lassoables : self_uuid={} nr_of_all_lassoable {}".format(SIEffect.short_uuid(self.get_uuid()), len(all_lassoable)))
+		if SIEffect.is_logging():
+			SIEffect.debug("Lasso.get_linked_lassoables : self_uuid={} nr_of_all_lassoable {}".format(SIEffect.short_uuid(self.get_uuid()), len(all_lassoable)))
 		for l in all_lassoable:
-			SIEffect.debug("Lasso.get_linked_lassoables : lassoable={} sender={}".format(SIEffect.short_uuid(l.get_uuid()), l.get_all_lnk_sender()))
+			if SIEffect.is_logging():
+				SIEffect.debug("Lasso.get_linked_lassoables : lassoable={} sender={}".format(SIEffect.short_uuid(l.get_uuid()), l.get_all_lnk_sender()))
 			if self.get_uuid() in l.get_all_lnk_sender():
 				lassoables.append(l)
 		return lassoables
@@ -76,7 +79,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	def recalculate_hull(self):
 		list_of_linked_lassoables = self.get_linked_lassoables()
 		if len(list_of_linked_lassoables) == 0:
-			SIEffect.debug('no linked lassoables lasso={}'.format(SIEffect.short_uuid(self.get_uuid())))
+			if SIEffect.is_logging():
+				SIEffect.debug('no linked lassoables lasso={}'.format(SIEffect.short_uuid(self.get_uuid())))
 			return
 		bboxes_points = []
 		for l in list_of_linked_lassoables:
@@ -87,7 +91,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 	# add additional points to the set of points of the hull of the bubble.
 	# Then recalculate the convex hull
 	def recalculate_hull_with_additional_points(self, additional_points, create_new=False):
-		SIEffect.debug("recalculate_hull x,y={},{}".format(self.x, self.y))
+		if SIEffect.is_logging():
+			SIEffect.debug("recalculate_hull x,y={},{}".format(self.x, self.y))
 		# The additional_points are in absolute coordinates
 		# First they must be changed to relative coordinates relative to the origin x,y of the bubble,
 		# because the shape is defined als PointVector for coordinates relative to the origin x,y
@@ -197,7 +202,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		moving_list = Lasso.get_intersecting_lassoables(workinglist_lassoables)
 		for ep in self._sb_endpoints:
 			l = Lasso.get_closest(workinglist_lassoables, ep)
-			SIEffect.debug("Lasso: workinglist_lassoables l={}, len={}".format(l, len(workinglist_lassoables)))
+			if SIEffect.is_logging():
+				SIEffect.debug("Lasso: workinglist_lassoables l={}, len={}".format(l, len(workinglist_lassoables)))
 			workinglist_lassoables.remove(l)
 			if l not in moving_list:
 				continue
@@ -231,7 +237,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		return lassoable_with_min_distance
 		
 	def get_circle_points(self, center_of_circle, radius, n):
-		SIEffect.debug("Lasso:get_circle_points {}".format(n))
+		if SIEffect.is_logging():
+			SIEffect.debug("Lasso:get_circle_points {}".format(n))
 		sector = (2.0 * math.pi) / n
 		points = []
 		for i in range(0,n):
@@ -249,7 +256,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 				if Lassoable.intersect(l1, l2):
 					moving_list.append(l1)
 					moving_list.append(l2)
-		SIEffect.debug("Lasso:get_intersecting_lassoables {} -> {}".format(l, len(moving_list)))			
+		if SIEffect.is_logging():
+			SIEffect.debug("Lasso:get_intersecting_lassoables {} -> {}".format(l, len(moving_list)))			
 		return moving_list
 	
 	# returns the cross product of vector p1p3 and p1p2
@@ -327,7 +335,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		sorted_polar = [i for j, i in enumerate(sorted_polar) if j not in to_remove]
 		m = len(sorted_polar)
 		if m < 2:
-			SIEffect.debug('Convex hull is empty')
+			if SIEffect.is_logging():
+				SIEffect.debug('Convex hull is empty')
 		else:
 			stack = []
 			stack_size = 0

@@ -40,9 +40,11 @@ class Split(Deletable, Movable, SIEffect):
                 if len(set1)+len(set2) == 1:
                     self.check_if_delete_lasso(lasso)
                 else:    
-                    SIEffect.debug("Split no lasso={}".format(lasso))
+                    if SIEffect.is_logging():
+                        SIEffect.debug("Split no lasso={}".format(lasso))
             else:
-                SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
+                if SIEffect.is_logging():
+                    SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
                 factor = 60.0 / self.normal_length 
                 # create new lasso for set1 lassoables
                 Split.create_new_lasso(lasso, set1)
@@ -61,14 +63,17 @@ class Split(Deletable, Movable, SIEffect):
             t.start()
             Split.splitcounter += 1
         except:
-            SIEffect.debug("Start Thread failed")
+            if SIEffect.is_logging():
+                SIEffect.debug("Start Splitend Thread failed")
     
     # Define a function for the thread
     def delete_split(self, delay):
-        SIEffect.debug("Start Thread begin")
+        if SIEffect.is_logging():
+            SIEffect.debug("Start Splitend Thread begin")
         time.sleep(delay)
         self.delete()
-        SIEffect.debug("Start Thread ended")
+        if SIEffect.is_logging():
+            SIEffect.debug("Start Splitend Thread ended")
       
     @staticmethod
     def create_new_lasso(lasso, set1):
@@ -114,7 +119,8 @@ class Split(Deletable, Movable, SIEffect):
         width = lasso.get_region_width()
         height = lasso.get_region_height()
         if Split.check_line_completely_intersects_rectangle(self.p1, self.p2, r, width, height):
-            SIEffect.debug("Split: lasso {} deleted".format(SIEffect.short_uuid(lasso.get_uuid())))
+            if SIEffect.is_logging():
+                SIEffect.debug("Split: lasso {} deleted".format(SIEffect.short_uuid(lasso.get_uuid())))
             lasso.delete()
             
     # check if a line given by points p1 and p2 completely intersects a rectangle

@@ -18,7 +18,8 @@ class Lassoable(SIEffect):
 
     @SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_enter_recv(self, parent_uuid):
-        SIEffect.debug('LASSOABLE: on_lasso_enter_recv self={}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
+        if SIEffect.is_logging():
+            SIEffect.debug('LASSOABLE: on_lasso_enter_recv self={}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
         if self.ignore_lasso_capability:
             return
         # A textfile self collided with a bubble collided_bubble_uuid
@@ -58,7 +59,8 @@ class Lassoable(SIEffect):
         # get all connected objects of old bubble
         # They must be relinked to new bubble
         all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
-        SIEffect.debug('LASSOABLE: nr of lassoables={}'.format(len(all_lassoable)))
+        if SIEffect.is_logging():
+            SIEffect.debug('LASSOABLE: nr of lassoables={}'.format(len(all_lassoable)))
         bboxes_points = []
         for l in all_lassoable:
             l.set_ignore_lasso_capability(True)
@@ -137,11 +139,13 @@ class Lassoable(SIEffect):
         if isinstance(parent, Mergeable):
             if parent.is_remove_link_blocked():
                 return # ignore. This is the remove_link bug
-        SIEffect.debug('LASSOABLE: on_lasso_leave_recv parent={} self={}'.format(SIEffect.short_uuid(parent_uuid), SIEffect.short_uuid(self._uuid)))
+        if SIEffect.is_logging():
+            SIEffect.debug('LASSOABLE: on_lasso_leave_recv parent={} self={}'.format(SIEffect.short_uuid(parent_uuid), SIEffect.short_uuid(self._uuid)))
         self.remove_link(parent_uuid, PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
 
     @SIEffect.on_link(SIEffect.RECEPTION, PySI.LinkingCapability.POSITION, PySI.LinkingCapability.POSITION)
     def set_position_from_position(self, rel_x, rel_y, abs_x, abs_y):
-        SIEffect.debug('LASSOABLE: set_position_from_position self={} rel={},{} abd={},{}'.format(SIEffect.short_uuid(self._uuid), rel_x, rel_y, abs_x, abs_y))
+        if SIEffect.is_logging():
+            SIEffect.debug('LASSOABLE: set_position_from_position self={} rel={},{} abd={},{}'.format(SIEffect.short_uuid(self._uuid), rel_x, rel_y, abs_x, abs_y))
         self.move(self.x + rel_x, self.y + rel_y)
         self.delta_x, self.delta_y = rel_x, rel_y
