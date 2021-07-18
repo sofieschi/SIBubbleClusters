@@ -19,11 +19,12 @@ class Lassoable(SIEffect):
             if self.recorded_events == None:
                 self.recorded_events = {}
         else:
-            for key,value in self.recorded_events.items():
-                #SIEffect.debug("Lassoable: self={} recorded_event={},{}".format(SIEffect.short_uuid(self.get_uuid()),SIEffect.short_uuid(key),value))
-                if value == 1: # enter event
-                    self.on_lasso_enter_recv_internal(key) # postponed event will be released now
-            self.recorded_events = None
+            if self.recorded_events != None:
+                for key,value in self.recorded_events.items():
+                    #SIEffect.debug("Lassoable: self={} recorded_event={},{}".format(SIEffect.short_uuid(self.get_uuid()),SIEffect.short_uuid(key),value))
+                    if value == 1: # enter event
+                        self.on_lasso_enter_recv_internal(key) # postponed event will be released now
+                self.recorded_events = None
 
     @SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_enter_recv(self, parent_uuid):
@@ -44,12 +45,13 @@ class Lassoable(SIEffect):
         # are already linked (because of the previous relink) therefore the first step is to check
         # if the testfile is not already linked to collided_bubble.
         parent = SIEffect.get_object_with(parent_uuid)
+        # parent could be None !!!
         create_link = True
         parent_is_lasso = isinstance(parent, Mergeable)
         if parent_is_lasso:
             create_link = self.lasso_collision(parent)
         if create_link:
-            self.create_link(parent.get_uuid(), PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
+            self.create_link(parent_uuid, PySI.LinkingCapability.POSITION, self._uuid, PySI.LinkingCapability.POSITION)
             if parent_is_lasso:
                 parent.recalculate_hull()
 
