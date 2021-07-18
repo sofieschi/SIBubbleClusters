@@ -175,14 +175,14 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		return sumx/nr_of_points, sumy/nr_of_points
 	
 	def collapse_or_expand_bubble(self):
-		SIEffect.debug("collapse_status={}".format(self.collapse_status))
+		#SIEffect.debug("collapse_status={}".format(self.collapse_status))
 		if self.collapse_status == 2: # 1 collapsed, 2 expanded, 0 inbetween
 			self.collapse_bubble()
 		else:
 			self.expand_bubble()
 
 	def collapse_bubble(self):
-		SIEffect.debug("collapse")
+		#SIEffect.debug("collapse")
 		linked_lassoables = self.get_linked_lassoables()
 		w = self.get_region_width() 
 		h = self.get_region_height()
@@ -201,40 +201,61 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self.collapse_status = 1
 
 	def expand_bubble(self):
-		SIEffect.debug("expand")
+		#SIEffect.debug("expand")
 		linked_lassoables = self.get_linked_lassoables()
 		w = self.get_region_width() 
 		h = self.get_region_height()
 		centerx, centery = self.absolute_x_pos() + 0.5 * w, self.absolute_y_pos() + 0.5 * h
 		sorted(linked_lassoables, key=attrgetter('filename'))
-		n = len(linked_lassoables)
-		grid_width = Lasso.get_grid_width(n)
-		i = 0 
-		epy = centery
-		dh = -10.0  # the height of the row (-10.0, so that it is 0.0 for the first row
-		for row in range(10):
-			epy += dh + 10.0
-			epx = centerx
-			dh = 0 # reset to 0, so that it can be recalculated in the next line 
-			for col in range(grid_width):
-				if i >= n:
-					break
-				l = linked_lassoables[i]
-				i += 1
-				l.move(epx - l.aabb[0].x, epy - l.aabb[0].y)
-				epx += l.get_region_width() + 10.0
-				if dh < l.get_region_height():
-					dh = l.get_region_height()
+		extensions = {}
+		for l in linked_lassoables:
+			ext = l.filename.split(".")[-1]
+			if ext not in extensions:
+				extensions[ext] = []
+			extensions[ext].append(l)
+		extx = centerx
+		current_height = 0
+		for ext,la_list in extensions.items():
+			#SIEffect.debug("ext={} {}".format(ext, extx))
+			n = len(la_list)
+			grid_width = Lasso.get_grid_width(n, current_height)
+			i = 0 
+			epy = centery
+			dh = -10.0  # the height of the row (-10.0, so that it is 0.0 for the first row
+			maxx = 0.0
+			for row in range(10):
+				epx = extx # x for the ext group
+				epy += dh + 10.0
+				dh = 0 # reset to 0, so that it can be recalculated in the next line 
+				for col in range(grid_width):
+					if i >= n:
+						break
+					l = la_list[i]
+					i += 1
+					l.move(epx - l.aabb[0].x, epy - l.aabb[0].y)
+					epx += l.get_region_width() + 10.0
+					if epx > maxx:
+						maxx = epx
+					if dh < l.get_region_height():
+						dh = l.get_region_height()
+					if row+1 > current_height:
+						current_height = row+1
+			extx = maxx +10.0 # calculate extx for next ext group
 		self.recalculate_hull()
 		self.collapse_status = 2
 	
 	# since the expanded bubble should be more squared than a thin rectangle, wo calculate the grid width
 	@staticmethod
-	def get_grid_width(n):
-		for i in range(1,10):
-			if i*i >= n:
-				return i
-		return 10
+	def get_grid_width(n,current_height):
+		#SIEffect.debug("get_grid_width={} {}".format(n, current_height))
+		if current_height == 0:
+			for i in range(1,10):
+				if i*i >= n:
+					return i
+			return 10
+		b = int(n / current_height +0.5)
+		#SIEffect.debug("get_grid_width2={} {}".format(n, b))
+		return b
 	
 	def spread_bubble_init(self):
 		# calculate radius of outer circle
