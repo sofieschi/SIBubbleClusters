@@ -234,14 +234,15 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			if ext not in extensions:
 				extensions[ext] = []
 			extensions[ext].append(l)
-		extx = centerx
+		moving_list = []
+		extx = 0 # centerx
 		current_height = 0
 		for ext,la_list in extensions.items():
 			#SIEffect.debug("ext={} {}".format(ext, extx))
 			n = len(la_list)
 			grid_width = Lasso.get_grid_width(n, current_height)
 			i = 0 
-			epy = centery
+			epy = 0 # centery
 			dh = -10.0  # the height of the row (-10.0, so that it is 0.0 for the first row
 			maxx = 0.0
 			for row in range(10):
@@ -253,7 +254,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 						break
 					l = la_list[i]
 					i += 1
-					l.move(epx - l.aabb[0].x, epy - l.aabb[0].y)
+					moving_list.append([l,epx,epy]) # moveinfo for the lassoable
+					#l.move(epx - l.aabb[0].x, epy - l.aabb[0].y)
 					epx += l.get_region_width() + 10.0
 					if epx > maxx:
 						maxx = epx
@@ -262,6 +264,26 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 					if row+1 > current_height:
 						current_height = row+1
 			extx = maxx +10.0 # calculate extx for next ext group
+		# calculate new bounding box
+		# The first lassoable starts at 0,0
+		bbox_w = 0
+		bbox_h = 0
+		for lc in moving_list:
+			l = lc[0]
+			x = lc[1]
+			y = lc[2]
+			xkand = x + l.get_region_width()
+			if xkand > bbox_w:
+				bbox_w = xkand
+			ykand = y + l.get_region_height()
+			if ykand > bbox_h:
+				bbox_h = ykand
+		d_bbox_w, d_bbox_h = bbox_w *0.5, bbox_h *0.5
+		for lc in moving_list:
+			l = lc[0]
+			x = lc[1] + centerx - d_bbox_w
+			y = lc[2] + centery - d_bbox_h
+			l.move(x - l.aabb[0].x, y - l.aabb[0].y)
 		self.recalculate_hull()
 		self.collapse_status = 2
 	
