@@ -34,6 +34,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		#w,h = 100,100
 		#r_shape = [[x,y], [x, y+h], [x+w, y+h], [x+w, y]]
 		kwargs = {"cwd": "", "parent": ""}
+		Lasso.explode2(bboxes_points, 1.1)
 		PySI.Startup.create_region_by_name(bboxes_points, Lasso.regionname, kwargs)
 
 	@SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.EMISSION)
@@ -104,7 +105,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		additional_points_relative = []
 		for p in additional_points:
 			additional_points_relative.append([p[0]-self.x,p[1]-self.y])
-			#additional_points_relative.append([p[0]-self.x,p[1]-self.y]) # twice, because the convex hull algorithm has a bug, ignoring points
+			additional_points_relative.append([p[0]-self.x,p[1]-self.y]) # twice, because the convex hull algorithm has a bug, ignoring points
 		points = PySI.PointVector(additional_points_relative)
 		if not create_new:
 			for p in self.shape:
@@ -162,7 +163,27 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			p.x = cx + (p.x - cx)*factor
 			p.y = cy + (p.y - cy)*factor
 		return points
+
+	# method used to enlarge the bubble like an explosion from the center point of the bubble
+	@staticmethod
+	def explode2(points, factor):
+		cx,cy = Lasso.calculate_center2(points)
+		for p in points:
+			p[0] = cx + (p[0] - cx)*factor
+			p[1] = cy + (p[1] - cy)*factor
+		return points
 	
+	@staticmethod
+	def calculate_center2(points):
+		sumx = 0.0
+		sumy = 0.0
+		nr_of_points = 0.0
+		for p in points:
+			sumx += p[0]
+			sumy += p[1]
+			nr_of_points += 1.0
+		return sumx/nr_of_points, sumy/nr_of_points
+
 	@staticmethod
 	def calculate_center(points):
 		sumx = 0.0

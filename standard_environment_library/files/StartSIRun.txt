@@ -1,0 +1,170 @@
+
+from libPySI import PySI
+from plugins.__loaded_plugins__.standard_environment_library.notification import SimpleNotification
+from plugins.__loaded_plugins__.standard_environment_library.filesystem import Directory
+from plugins.__loaded_plugins__.standard_environment_library.cursor import Cursor
+from plugins.__loaded_plugins__.standard_environment_library.deletion import Deletion
+from plugins.__loaded_plugins__.standard_environment_library.slider import SliderBase
+from plugins.__loaded_plugins__.standard_environment_library.slider import SliderTargetDummy
+from plugins.__loaded_plugins__.standard_environment_library.filesystem import TextFile
+from plugins.__loaded_plugins__.standard_environment_library.filesystem import ImageFile
+
+def add_canvas():
+    canvas_shape = [[0, 0],
+                    [0, PySI.Startup.context_dimensions()[1]],
+                    [PySI.Startup.context_dimensions()[0], PySI.Startup.context_dimensions()[1]],
+                    [PySI.Startup.context_dimensions()[0], 0]]
+
+    PySI.Startup.create_region_by_type(canvas_shape, PySI.EffectType.SI_CANVAS, {})
+
+def add_mouse_cursor():
+    mouse_shape = [[0, 0],
+                   [0, Cursor.Cursor.region_height],
+                   [Cursor.Cursor.region_width, Cursor.Cursor.region_height],
+                   [Cursor.Cursor.region_width, 0]]
+
+    PySI.Startup.create_region_by_class(mouse_shape, Cursor, {})
+
+def add_simple_notification():
+    x = PySI.Startup.context_dimensions()[0] / 2 - SimpleNotification.SimpleNotification.region_width / 2
+
+    simple_notification_shape = [[x, 75],
+                                 [x, 75 + SimpleNotification.SimpleNotification.region_height],
+                                 [x + SimpleNotification.SimpleNotification.region_width, 75 + SimpleNotification.SimpleNotification.region_height],
+                                 [x + SimpleNotification.SimpleNotification.region_width, 75]]
+
+    PySI.Startup.create_region_by_class(simple_notification_shape, SimpleNotification, {})
+
+def add_palette():
+    print("context_dimensions={}".format(PySI.Startup.context_dimensions()))
+    palette_shape = [[PySI.Startup.context_dimensions()[0] - 120, 25],
+                     [PySI.Startup.context_dimensions()[0] - 120, 120],
+                     [PySI.Startup.context_dimensions()[0] - 0, 120],
+                     [PySI.Startup.context_dimensions()[0] - 0, 75]]
+
+    PySI.Startup.create_region_by_type(palette_shape, PySI.EffectType.SI_PALETTE, {})
+
+def add_start_directory():
+    directory_path = "" # if empty, the Desktop will be used
+
+    directory_shape = [[75, 75],
+                       [75, 75 + Directory.Directory.region_height],
+                       [75 + Directory.Directory.region_width, 75 + Directory.Directory.region_height],
+                       [75 + Directory.Directory.region_width, 75]]
+
+    kwargs = {"cwd": directory_path, "parent": ""}
+    PySI.Startup.create_region_by_type(directory_shape, PySI.EffectType.SI_DIRECTORY, kwargs)
+
+import math
+
+# Fuer Sofie
+def add_files():
+    w,h = 60, 40
+    
+    files = [['01.txt',0,0],
+             ['02.txt',0,0],
+             ['03.txt',0,0],
+             ['04.txt',0,0],
+             ['05.txt',0,0],
+             ['06.txt',0,0],
+             ['07.txt',0,0],
+             ['08.txt',0,0],
+             ['09.txt',0,0],
+             ['10.txt',0,0],
+             ['art.csv',0,0],
+             ['knd.csv',0,0],
+             ['pat.csv',0,0],
+             ['cat.jpg',0,0],
+             ['dog.jpg',0,0],
+             ['owl.jpg',0,0],
+             ['mouse.jpg',0,0],
+             ['rabbit.jpg',0,0],
+             ['fish.jpg',0,0],
+             ['blob.jpg',0,0],
+             ['bug.jpg',0,0],
+             ['monkey.jpg',0,0],
+             ['elephant.png',0,0]]
+    x, y = 10, 20
+    for f in files:
+        if f[1] == 0 and f[2] == 0:
+            f[1] = x
+            f[2] = y
+            y += 50
+            if y > 650:
+                x += 100
+                y = 20
+            
+    for f in files:
+        kwargs = {"cwd": f[0], "parent": ""}
+        x,y = f[1],f[2]
+        r_shape = [[x,y], [x, y+h], [x+w, y+h], [x+w, y]]
+        if f[0].endswith(".txt") or f[0].endswith(".csv"):
+            PySI.Startup.create_region_by_class(r_shape, TextFile, kwargs)
+        else:
+            PySI.Startup.create_region_by_class(r_shape, ImageFile, kwargs)
+    
+## Author: RW
+def add_many_regions(num = 100, area_width= 1600, area_height=800):
+    left = (PySI.Startup.context_dimensions()[0] - area_width) // 2
+    top = (PySI.Startup.context_dimensions()[1] - area_height) // 2
+    num_h = math.ceil(math.sqrt(num / (area_width/area_height)))
+    num_w = math.floor(num/num_h)
+    # print(f"creating region matrix: {num_w}, {num_h}")
+
+    directory_path = ""
+
+    for i in range(num):
+        row = i // num_w
+        col = i % num_w
+        # print(f"Creating region {i}: row {row}, col {col}")
+        x = col * (area_width // num_w) + left
+        y = row * (area_height // num_h) + top
+        w = int(area_width // num_w * 0.9)
+        h = int(area_height // num_h * 0.9)
+        r_shape = [[x,y], [x, y+h], [x+w, y+h], [x+w, y]]
+
+        kwargs = {"cwd": directory_path, "parent": ""}
+
+        PySI.Startup.create_region_by_class(r_shape, Deletion, kwargs)
+
+
+def add_slider(shape, c):
+    PySI.Startup.create_region_by_class(shape, SliderBase, {"color_channel": c})
+
+
+def add_slider_target(shape):
+    PySI.Startup.create_region_by_class(shape, SliderTargetDummy, {})
+
+
+def on_start():
+    # PySI.Startup.disable(PySI.Configuration.SI_CRASH_DUMP)
+    PySI.Startup.enable(PySI.Configuration.SI_ANTI_ALIASING_8x)
+
+    PySI.Startup.logger_log(True)
+    PySI.Startup.logger_set_log_output(PySI.Logger.SI_LOG_SHOW_ALL)
+    PySI.Startup.logger_quench_messages_from_class("linkingmanager")
+    PySI.Startup.logger_quench_messages_from_class("recognizer")
+    PySI.Startup.logger_quench_messages_from_class("mainwindow")
+
+    # color_picker = True
+    color_picker = False
+    sofie = True
+    
+    add_canvas()
+    add_mouse_cursor()
+
+    if color_picker:
+        add_slider([[500, 500], [500, 530], [800, 530], [800, 500]], "r")
+        add_slider([[500, 600], [500, 630], [800, 630], [800, 600]], "g")
+        add_slider([[500, 700], [500, 730], [800, 730], [800, 700]], "b")
+
+        add_slider_target([[1000, 570], [1000, 670], [1100, 670], [1100, 570]])
+    elif sofie:
+        add_palette()
+        add_files()
+    else:
+        add_simple_notification()
+        add_palette()
+        add_start_directory()
+
+    # add_many_regions(1000)

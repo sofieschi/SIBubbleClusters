@@ -46,17 +46,26 @@ class Split(Deletable, Movable, SIEffect):
                 if SIEffect.is_logging():
                     SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
                 factor = 60.0 / self.normal_length 
-                # create new lasso for set1 lassoables
-                Split.create_new_lasso(lasso, set1)
+                # first we need to create the new lasso, but already with the hull, which
+                # will contain all lassoables of set1, which will be moved.
+                # Therefore, we must first calculate the future position of set1 lassoables,
+                # then create the new lasso with that hull information, then unlink the set1 lassoables
+                # and finally move the lassoables into the new lasso
+                moving_list = []
                 for l in set1:
                     # remove l from lasso and do not conenct it to new lasso,
                     # because there is no uuid of the new lasso
                     l.relink_to_new_bubble(lasso.get_uuid(), None)
                     mx,my = l.x + factor*self.normal[0], l.y + factor*self.normal[1] 
-                    l.move(mx,my)
+                    moving_list.append([l,mx,my])
+                    #l.move(mx,my)
                 for l in set2:
                     mx,my = l.x - factor*self.normal[0], l.y - factor*self.normal[1] 
                     l.move(mx,my)
+                Split.create_new_lasso(lasso, moving_list)
+
+                for l in moving_list:
+                    l[0].move(l[1],l[2])
                 lasso.recalculate_hull()
         try:
             t = Thread(target=self.delete_split, args=(2,))
@@ -76,11 +85,14 @@ class Split(Deletable, Movable, SIEffect):
             SIEffect.debug("Start Splitend Thread ended")
       
     @staticmethod
-    def create_new_lasso(lasso, set1):
+    def create_new_lasso(lasso, moving_list):
         bboxes_points = []
-        for l in set1:
+        for lc in moving_list:
+            l = lc[0]
+            mx = lc[1]
+            my = lc[2]
             for i in list(range(4)):
-                bboxes_points.append([l.x + l.aabb[i].x, l.y + l.aabb[i].y])  
+                bboxes_points.append([mx + l.aabb[i].x, my + l.aabb[i].y])  
         lasso.create_new_lasso(bboxes_points)
 
     # the curved shape will be changed to a straight line
