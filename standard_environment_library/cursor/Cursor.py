@@ -2,6 +2,7 @@ from libPySI import PySI
 from plugins.standard_environment_library.SIEffect import SIEffect
 from plugins.standard_environment_library.lasso.Lasso import Lasso
 from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
+from pickle import NONE
 
 class Cursor(SIEffect):
     regiontype = PySI.EffectType.SI_MOUSE_CURSOR
@@ -37,6 +38,10 @@ class Cursor(SIEffect):
         self._middle_mouse_blocked_lasso = None
         self.abs_pos_x_at_middle_mouse_click_begin = None
         self.abs_pos_y_at_middle_mouse_click_begin = None
+        
+        self.selected_lassoable = None # lassoable is selected on right click
+        self.debug = True
+
 
     #def mouse_wheel_angle_px(self, px):
     #    SIEffect.debug("mouse_wheel_angle_px {}".format(px))
@@ -124,10 +129,13 @@ class Cursor(SIEffect):
         return 0, 0, self._uuid
 
     def on_move_enter_emit(self, other):
-        if SIEffect.is_logging():
+        if self.debug or SIEffect.is_logging():
             SIEffect.debug("on_move_enter_emit other={}".format(other))
         if self.move_target is None:
-            self.move_target = other
+            if self.selected_lassoable != None:
+                self.move_target = self.selected_lassoable
+            else:
+                self.move_target = other
 
         if self.move_target is other:
             return self._uuid, PySI.LinkingCapability.POSITION
@@ -136,6 +144,8 @@ class Cursor(SIEffect):
 
     def on_move_continuous_emit(self, other):
         pass
+        #if self.selected_lassoable != None:
+        #    self.selected_lassoable.move(self.x, self.y)
         #SIEffect.debug("move cursor {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
         #l = SIEffect.get_all_objects_extending_class(Lasso)
         #SIEffect.debug("move {}".format(len(l)))
@@ -189,21 +199,26 @@ class Cursor(SIEffect):
                     self.btn_target.on_click_leave_recv(self._uuid)
 
     def on_right_mouse_click(self, is_active):
-        if SIEffect.is_logging():
+        if self.debug or SIEffect.is_logging():
             SIEffect.debug("move cursor2 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
             SIEffect.debug("1 {},{} {},{}".format(self.absolute_x_pos(), self.absolute_y_pos(), self.get_region_width(), self.get_region_height()))
         l = SIEffect.get_all_objects_extending_class(Lasso)
-        if SIEffect.is_logging():
+        if self.debug or SIEffect.is_logging():
             SIEffect.debug("2 {}".format(len(l)))
             for ls in l:
                 SIEffect.debug("3 {}".format(ls.get_uuid()))
                 SIEffect.debug("4 {},{} {},{}".format(ls.absolute_x_pos(), ls.absolute_y_pos(), ls.get_region_width(), ls.get_region_height()))
 
         self.right_mouse_active = is_active
-        if SIEffect.is_logging():
+        if self.debug or SIEffect.is_logging():
             SIEffect.debug("move cursor22 {}".format(is_active))
         if is_active:
-            if SIEffect.is_logging():
+            self.selected_lassoable, sel_lassoable_lasso = self.cursor_tip_selects_lassoable() # to move lassoables out of bubbles
+            #if sel_lassoable_lasso != None:
+            #    #sel_lassoable_lasso.self.is_under_user_control = False
+            #    sel_lassoable_lasso.set_position_redirection(self.selected_lassoable)
+            
+            if self.debug or SIEffect.is_logging():
                 SIEffect.debug("move cursor23 {}".format(PySI.CollisionCapability.MOVE not in self.cap_emit.keys()))
             if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
                 self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_move_enter_emit, self.on_move_continuous_emit, self.on_move_leave_emit)
@@ -213,7 +228,27 @@ class Cursor(SIEffect):
             if self.move_target is not None:
                 self.move_target.on_move_leave_recv(*self.on_move_leave_emit(self.move_target))
             self.block_lassoable_events(False)
-    
+            all_lassos = SIEffect.get_all_objects_extending_class(Lasso)
+            for l in all_lassos:
+                l.set_position_redirection(None)
+            self.selected_lassoable = None
+
+    # Check if a lassoable is selected by the tip of the cursor.
+    # If that is the case, the lassoable will be unlinked from a bubble
+    # Only the first found lassoable will be returned
+    def cursor_tip_selects_lassoable(self):
+        cx,cy = self.absolute_x_pos(), self.absolute_y_pos()
+        all_lassoables = SIEffect.get_all_objects_extending_class(Lassoable)
+        for l in all_lassoables:
+            if l.contains_point(cx,cy):
+                linked_bubbles = l.get_all_lnk_sender_extending_class(Lasso)
+                if len(linked_bubbles) > 0:
+                    # the cursor selected a lassoable, which is linked to ab bubble.
+                    # Since the lassoable should move, the lassoable be unlinked from the bubble
+                    l.relink_to_new_bubble(linked_bubbles[0].get_uuid(), None)
+                    return l, linked_bubbles[0]
+        return None, None
+                    
     def block_lassoable_events(self, is_active):
         all_lassoables = SIEffect.get_all_objects_extending_class(Lassoable)
         for l in all_lassoables:
