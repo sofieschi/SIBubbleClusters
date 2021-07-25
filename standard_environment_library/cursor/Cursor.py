@@ -229,8 +229,8 @@ class Cursor(SIEffect):
                 self.move_target.on_move_leave_recv(*self.on_move_leave_emit(self.move_target))
             self.block_lassoable_events(False)
             all_lassos = SIEffect.get_all_objects_extending_class(Lasso)
-            for l in all_lassos:
-                l.set_position_redirection(None)
+            #for l in all_lassos:
+            #    l.set_position_redirection(None)
             self.selected_lassoable = None
 
     # Check if a lassoable is selected by the tip of the cursor.

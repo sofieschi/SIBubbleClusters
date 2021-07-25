@@ -108,10 +108,20 @@ class Split(Deletable, Movable, SIEffect):
         return new_shape
 
     def split_lasso(self, lasso):
-        set1 = []
-        set2 = []
+        set1 = [] # set of lassoables for the "first" side of the split
+        set2 = [] # set of lassoables for the "other" side of the split
         #SIEffect.debug("Split p1={}".format(self.p1))
         #SIEffect.debug("Split p2={}".format(self.p2))
+        
+        # we only split the lasso, iff all points of the bounding box of the lasso are inside the section of the split
+        for i in range(4):
+            qx,qy = lasso.x + lasso.aabb[i].x, lasso.y + lasso.aabb[i].y
+            SIEffect.debug("Split q={},{}".format(qx,qy))
+        for i in range(4):
+            qx,qy = lasso.x + lasso.aabb[i].x, lasso.y + lasso.aabb[i].y
+            if self.check_if_point_is_inside_section(qx,qy) == False:
+                return set1,set2 # no split
+        
         linked_lassoables = lasso.get_linked_lassoables()
         for lassoable in linked_lassoables:
             cx,cy = lassoable.get_center()
@@ -134,7 +144,27 @@ class Split(Deletable, Movable, SIEffect):
             if SIEffect.is_logging():
                 SIEffect.debug("Split: lasso {} deleted".format(SIEffect.short_uuid(lasso.get_uuid())))
             lasso.delete()
-            
+    
+    # checks if a point q is inside the section given by the points p1 and p2
+    # Consider the given straight line segment p1p2. Let g1 be the straight line perpendicular to that 
+    # straight line segment through p1 and g2 be the straight line perpendicular to that straight line segment 
+    # through p2. The section s(p1,p2) between p1 and p2 is defined as
+    # the set of all points between these two straight lines g1 and g2. 
+    def check_if_point_is_inside_section(self, qx,qy) -> bool:
+        # the point q is in section(p1,p2) exactly if v*lv >= 0 and u * lv <= 0
+        # self.lv = p2 - p1
+        SIEffect.debug("Split check_if_point_is_inside_section q={},{}".format(qx,qy))
+        SIEffect.debug("Split check_if_point_is_inside_section p1={},{} p2={},{}".format(self.p1[0], self.p1[1], self.p2[0], self.p2[1]))
+        SIEffect.debug("Split check_if_point_is_inside_section lv={},{}".format(self.lv[0], self.lv[1]))
+        vx,vy = qx-self.p1[0], qy-self.p1[1]
+        ux,uy = qx-self.p2[0], qy-self.p2[1]
+        vlv = vx*self.lv[0] + vy*self.lv[1]
+        ulv = ux*self.lv[0] + uy*self.lv[1]
+        SIEffect.debug("Split check_if_point_is_inside_section vlv={}, ulv{}".format(vlv,ulv))
+        if vlv < 0:
+            return False
+        return ulv <= 0
+        
     # check if a line given by points p1 and p2 completely intersects a rectangle
     # The rectangle is given by the left upper point and width and height
     # Completely means both endpoints of the line are outside the rectangle 
