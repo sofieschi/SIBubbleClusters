@@ -23,13 +23,14 @@ class SIEffect(PySI.Effect):
     TEXTURE_PATH_NONE = ""
 
     ## static member attribute to notify SIGRun to resample a region's shape when changed from PySI
-    RESAMPLING = True
+    RESAMPLING = False
 
     ## static member attribute to notify SIGRun to not resample a region's shape when changed from PySI
     # Use with caution!
     # May lead to unexpected / barely debuggable behaviour!
-    NO_RESAMPLING = False
+    NO_RESAMPLING = True
 
+    # The registry
     _regmap = {}
 
 

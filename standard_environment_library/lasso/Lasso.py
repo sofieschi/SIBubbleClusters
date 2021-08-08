@@ -82,6 +82,20 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 				lassoables.append(l)
 		return lassoables
 	
+	# Move lasso by cursor
+	# It is used for the cursor workaround
+	def link_position_to_cursor(self, cursor_uuid):
+		self.create_link(cursor_uuid, PySI.LinkingCapability.POSITION, self.get_uuid(), PySI.LinkingCapability.POSITION)
+		self.is_under_user_control = True
+
+	# Lasso should not be moved by cursor
+	# It is used for the cursor workaround
+	def unlink_position_to_cursor(self, cursor_uuid):
+		lr = PySI.LinkRelation(cursor_uuid, PySI.LinkingCapability.POSITION, self.get_uuid(), PySI.LinkingCapability.POSITION)
+		if lr in self.link_relations:
+			del self.link_relations[self.link_relations.index(lr)]
+		self.is_under_user_control = False
+
 	def recalculate_hull(self):
 		list_of_linked_lassoables = self.get_linked_lassoables()
 		if len(list_of_linked_lassoables) == 0:
@@ -135,6 +149,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		for p in sp:
 			new_shape.append(p)
 		self.shape = new_shape
+		#self.set_shape(new_shape)
 		#SIEffect.debug("new bounding box ={},{}  {},{}   {},{}".format(minx, miny, maxx, maxy, maxx-minx, maxy-miny))
 		#recalculation of the bounding_box aabb is done automatically
 

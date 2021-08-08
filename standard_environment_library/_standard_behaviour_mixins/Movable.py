@@ -25,6 +25,8 @@ class Movable(PositionLinkable, SIEffect):
 
     @SIEffect.on_leave(PySI.CollisionCapability.MOVE, SIEffect.RECEPTION)
     def on_move_leave_recv(self, cursor_id, link_attrib):
+        if SIEffect.is_logging():
+            SIEffect.debug('Movable: on_move_leave_recv')
         if not cursor_id == "" and not link_attrib == "":
 
             lr = PySI.LinkRelation(cursor_id, link_attrib, self._uuid, link_attrib)
