@@ -2,8 +2,6 @@ from libPySI import PySI
 from plugins.standard_environment_library.SIEffect import SIEffect
 from plugins.standard_environment_library.lasso.Lasso import Lasso
 from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
-from threading import Thread
-from time import sleep
 
 class Cursor(SIEffect):
     regiontype = PySI.EffectType.SI_MOUSE_CURSOR
@@ -42,12 +40,6 @@ class Cursor(SIEffect):
         
         self.selected_lassoable = None # lassoable is selected on right click
         self.selected_lasso = None # lasso is selected on right click
-        self.use_workaround = False
-        self.workaround_initial_phase = False
-        self.workaround_x = self.x # Initial value is not used
-        self.workaround_y = self.y # Initial value is not used
-        self.workaround_lasso_x = self.x # Initial value is not used
-        self.workaround_lasso_y = self.y # Initial value is not used
         self.debug = True
 
     #def mouse_wheel_angle_px(self, px):
@@ -136,8 +128,6 @@ class Cursor(SIEffect):
         return 0, 0, self._uuid
 
     def on_move_enter_emit(self, other):
-        if self.workaround_initial_phase == True:
-            self.stop_collision_bug_workaround()
         if self.debug or SIEffect.is_logging():
             SIEffect.debug("Cursor: on_move_enter_emit other={}".format(other))
         if self.move_target is None:
@@ -252,7 +242,6 @@ class Cursor(SIEffect):
             #all_lassos = SIEffect.get_all_objects_extending_class(Lasso)
             #for l in all_lassos:
             #    l.set_position_redirection(None)
-            self.stop_collision_bug_workaround()
             if self.selected_lasso != None:
                 self.selected_lasso.unlink_position_to_cursor(self.get_uuid())
             self.selected_lassoable = None
@@ -288,49 +277,6 @@ class Cursor(SIEffect):
         for l in all_lassoables:
             l.set_ignore_lasso_capability(is_active)
     
-    def start_collision_bug_workaround(self):
-        SIEffect.debug("Cursor Workaround Start")
-        self.use_workaround = True
-        self.workaround_initial_phase = True
-        # store x,y of Cursor and Lasso at right mouse press
-        self.workaround_x = self.x
-        self.workaround_y = self.y
-        self.workaround_list = []
-        self.workaround_list.append([self.selected_lasso, self.selected_lasso.x, self.selected_lasso.y])
-        for l in self.selected_lasso.get_linked_lassoables():
-            self.workaround_list.append([l, l.x, l.y])
-
-        try:
-            t = Thread(target=self.workaround, args=(5,))
-            t.start()
-        except:
-            if SIEffect.is_logging():
-                SIEffect.debug("Cursor Workaround Thread failed")
-    
-    def stop_collision_bug_workaround(self):
-        SIEffect.debug("Cursor Workaround Stop")
-        self.use_workaround = False
-        self.workaround_list = []
-
-    # pip install python-xlib
-    def workaround(self, delay):
-        if SIEffect.is_logging():
-            SIEffect.debug("Cursor workaround begin")
-        sleep(0.05)
-        self.workaround_initial_phase = False
-        while self.use_workaround:
-            SIEffect.debug("Cursor workaround {},{}".format(self.x,self.y))
-            # The initial Distance of Lasso to Cursor
-            dx,dy = self.x - self.workaround_x, self.y - self.workaround_y
-            # The initial distance should stay the same, even if the Cursor moves
-            # From that the position of the lasso can be calculated
-            for l in self.workaround_list:
-                l[0].move(dx+l[1],dy+l[2])
-            #SIEffect.debug("Cursor workaround move to {},{}".format(lx,ly))
-            sleep(0.02)
-        if SIEffect.is_logging():
-            SIEffect.debug("Cursor workaround end")
-            
     @SIEffect.on_continuous(PySI.CollisionCapability.ASSIGN, SIEffect.RECEPTION)
     def on_assign_continuous_recv(self, effect_to_assign, effect_display_name, kwargs):
         if self.left_mouse_active:

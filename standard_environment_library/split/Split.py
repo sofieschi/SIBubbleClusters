@@ -116,7 +116,8 @@ class Split(Deletable, Movable, SIEffect):
         # we only split the lasso, iff all points of the bounding box of the lasso are inside the section of the split
         for i in range(4):
             qx,qy = lasso.x + lasso.aabb[i].x, lasso.y + lasso.aabb[i].y
-            SIEffect.debug("Split q={},{}".format(qx,qy))
+            if SIEffect.is_logging():
+                SIEffect.debug("Split q={},{}".format(qx,qy))
         for i in range(4):
             qx,qy = lasso.x + lasso.aabb[i].x, lasso.y + lasso.aabb[i].y
             if self.check_if_point_is_inside_section(qx,qy) == False:
@@ -153,14 +154,16 @@ class Split(Deletable, Movable, SIEffect):
     def check_if_point_is_inside_section(self, qx,qy) -> bool:
         # the point q is in section(p1,p2) exactly if v*lv >= 0 and u * lv <= 0
         # self.lv = p2 - p1
-        SIEffect.debug("Split check_if_point_is_inside_section q={},{}".format(qx,qy))
-        SIEffect.debug("Split check_if_point_is_inside_section p1={},{} p2={},{}".format(self.p1[0], self.p1[1], self.p2[0], self.p2[1]))
-        SIEffect.debug("Split check_if_point_is_inside_section lv={},{}".format(self.lv[0], self.lv[1]))
+        if SIEffect.is_logging():
+            SIEffect.debug("Split check_if_point_is_inside_section q={},{}".format(qx,qy))
+            SIEffect.debug("Split check_if_point_is_inside_section p1={},{} p2={},{}".format(self.p1[0], self.p1[1], self.p2[0], self.p2[1]))
+            SIEffect.debug("Split check_if_point_is_inside_section lv={},{}".format(self.lv[0], self.lv[1]))
         vx,vy = qx-self.p1[0], qy-self.p1[1]
         ux,uy = qx-self.p2[0], qy-self.p2[1]
         vlv = vx*self.lv[0] + vy*self.lv[1]
         ulv = ux*self.lv[0] + uy*self.lv[1]
-        SIEffect.debug("Split check_if_point_is_inside_section vlv={}, ulv{}".format(vlv,ulv))
+        if SIEffect.is_logging():
+            SIEffect.debug("Split check_if_point_is_inside_section vlv={}, ulv{}".format(vlv,ulv))
         if vlv < 0:
             return False
         return ulv <= 0
