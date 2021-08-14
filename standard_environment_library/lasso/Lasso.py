@@ -26,7 +26,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self._sb_radius = 0.0
 		self._sb_endpoints = []
 		self._sb_lassoable_positions = []
-		self.collapse_status = 0  # 1 = collapsed, 2 = expanded, 0 = inbetween 
+		self.collapse_status = 0  # 1 = collapsed, 2 = expanded, 0 = inbetween
+		SIEffect.debug("Lasso: new Lasso {}".format(self.get_uuid()))
 	
 	# For splitting a lasso must be created. It is done by this method
 	def create_new_lasso(self, bboxes_points) -> None:
@@ -36,6 +37,16 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		kwargs = {"cwd": "", "parent": ""}
 		Lasso.explode2(bboxes_points, 1.1)
 		PySI.Startup.create_region_by_name(bboxes_points, Lasso.regionname, kwargs)
+
+	# workaround for the collision detection bug
+	def process_collision(self):
+		SIEffect.debug("Lasso: process_collision")
+		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
+		ll = self.get_linked_lassoables()
+		for l in all_lassoable:
+			if l not in ll:
+				if Lassoable.intersect(self,l):
+					l.on_lasso_enter_recv(self.get_uuid())
 
 	@SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.EMISSION)
 	def on_lasso_enter_emit(self, other):
@@ -67,7 +78,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		result = self.get_all_lnk_sender()
 		if SIEffect.is_logging():
 			for sender in result:
-				SIEffect.debug("Lasso.get_link_receiver : sender {}".format(SIEffect.short_uuid(sender)))
+				SIEffect.debug("Lasso.get_link_sender : sender {}".format(SIEffect.short_uuid(sender)))
 		return result
 
 	def get_linked_lassoables(self):
@@ -95,6 +106,38 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		if lr in self.link_relations:
 			del self.link_relations[self.link_relations.index(lr)]
 		self.is_under_user_control = False
+
+	# Check if a point is inside a polygon
+	# https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
+	def polygon_contains_point(self, px, py):
+		points = []
+		for p in self.shape:
+			points.append(p)
+		c = False
+		n = len(points)
+		j = n-1
+		for i in range(0,n):
+			pi = points[i]
+			pj = points[j]
+			if ((pi.y > py) != (pj.y > py)) and (px < (pj.x-pi.x) * (py-pi.y) / (pj.y-pi.y) + pi.x):
+				c = not c
+			j = i
+		SIEffect.debug("Lasso contains point {}".format(c))
+		return c
+	
+	#@staticmethod
+	#def kreuzProdTest():
+	
+
+	#int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy)
+  	#int i, j, c = 0;
+   	#for (i = 0, j = nvert-1; i < nvert; j = i++) {
+	#if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+	# (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+	#   c = !c;
+  	#}
+   #return c;
+   #}
 
 	def recalculate_hull(self):
 		list_of_linked_lassoables = self.get_linked_lassoables()
