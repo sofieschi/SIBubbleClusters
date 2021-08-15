@@ -17,13 +17,13 @@ def add_canvas():
 
     PySI.Startup.create_region_by_type(canvas_shape, PySI.EffectType.SI_CANVAS, {})
 
-def add_mouse_cursor():
+def add_mouse_cursor(kwargs):
     mouse_shape = [[0, 0],
                    [0, Cursor.Cursor.region_height],
                    [Cursor.Cursor.region_width, Cursor.Cursor.region_height],
                    [Cursor.Cursor.region_width, 0]]
 
-    PySI.Startup.create_region_by_class(mouse_shape, Cursor, {})
+    PySI.Startup.create_region_by_class(mouse_shape, Cursor, kwargs)
 
 def add_simple_notification():
     x = PySI.Startup.context_dimensions()[0] / 2 - SimpleNotification.SimpleNotification.region_width / 2
@@ -57,10 +57,59 @@ def add_start_directory():
 
 import math
 
-# Fuer Sofie
-def add_files():
-    w,h = 60, 40
+# For Sofie
+# method to prepare test1
+def prepare_test1():    
+    files = [['A.txt',0,0],
+             ['B.txt',0,0],
+             ['hase.jpg',0,0],
+             ['taube.jpg',0,0]]
+    x, y = 100, 100
+    for f in files:
+        if f[1] == 0 and f[2] == 0:
+            f[1] = x
+            f[2] = y
+            x += 100
+            if x > 650:
+                x = 20
+                y += 100
+    show_files(files)
+
+# method to prepare test1
+def prepare_test2():    
+    files = [['A.txt',0,0],
+             ['B.txt',0,0],
+             ['hase.jpg',0,0],
+             ['taube.jpg',0,0]]
+    x, y = 100, 100
+    for f in files:
+        if f[1] == 0 and f[2] == 0:
+            f[1] = x
+            f[2] = y
+            x += 100
+            if x > 650:
+                x = 20
+                y += 100
+    show_files(files)
     
+    # method to prepare test1
+def prepare_test3():    
+    files = [['A.txt',0,0],
+             ['B.txt',0,0],
+             ['hase.jpg',0,0],
+             ['taube.jpg',0,0]]
+    x, y = 100, 100
+    for f in files:
+        if f[1] == 0 and f[2] == 0:
+            f[1] = x
+            f[2] = y
+            x += 100
+            if x > 650:
+                x = 20
+                y += 100
+    show_files(files)
+# method for normal use
+def add_files():
     files = [['01.txt',0,0],
              ['02.txt',0,0],
              ['03.txt',0,0],
@@ -71,9 +120,9 @@ def add_files():
              ['08.txt',0,0],
              ['09.txt',0,0],
              ['10.txt',0,0],
+             ['11.txt',0,0],
              ['art.csv',0,0],
              ['knd.csv',0,0],
-             ['pat.csv',0,0],
              ['cat.jpg',0,0],
              ['dog.jpg',0,0],
              ['owl.jpg',0,0],
@@ -93,7 +142,10 @@ def add_files():
             if y > 650:
                 x += 100
                 y = 20
-            
+    show_files(files)
+
+def show_files(files):
+    w,h = 60, 40
     for f in files:
         kwargs = {"cwd": f[0], "parent": ""}
         x,y = f[1],f[2]
@@ -149,9 +201,11 @@ def on_start():
     # color_picker = True
     color_picker = False
     sofie = True
-    
+    #kwargs = {}
+    kwargs = {"proband": "SchiesslingSofie", "test": "1"}
+
     add_canvas()
-    add_mouse_cursor()
+    add_mouse_cursor(kwargs)
 
     if color_picker:
         add_slider([[500, 500], [500, 530], [800, 530], [800, 500]], "r")
@@ -161,7 +215,15 @@ def on_start():
         add_slider_target([[1000, 570], [1000, 670], [1100, 670], [1100, 570]])
     elif sofie:
         add_palette()
-        add_files()
+        #add_files()
+        if kwargs["test"] == "1":
+            prepare_test1()
+        elif kwargs["test"] == "2":
+            prepare_test2()
+        elif kwargs["test"] == "3":
+            prepare_test3()
+        else:
+            add_files()
     else:
         add_simple_notification()
         add_palette()
