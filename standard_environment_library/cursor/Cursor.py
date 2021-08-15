@@ -2,9 +2,9 @@ from libPySI import PySI
 from plugins.standard_environment_library.SIEffect import SIEffect
 from plugins.standard_environment_library.lasso.Lasso import Lasso
 from plugins.standard_environment_library._standard_behaviour_mixins.Lassoable import Lassoable
-import subprocess
-from threading import Thread
-import time
+from plugins.standard_environment_library.cursor.Test1 import Test1
+from plugins.standard_environment_library.cursor.Test2 import Test2
+from plugins.standard_environment_library.cursor.Test3 import Test3
 
 class Cursor(SIEffect):
     regiontype = PySI.EffectType.SI_MOUSE_CURSOR
@@ -44,7 +44,12 @@ class Cursor(SIEffect):
         self.selected_lassoable = None # lassoable is selected on right click
         self.selected_lasso = None # lasso is selected on right click
         self.debug = True
-        self.start_test_thread()
+        if kwargs["test"] == "1":
+            self.test = Test1(kwargs["proband"])
+        elif kwargs["test"] == "2":
+            self.test = Test2(kwargs["proband"])
+        elif kwargs["test"] == "3":
+            self.test = Test3(kwargs["proband"])
 
     #def mouse_wheel_angle_px(self, px):
     #    SIEffect.debug("mouse_wheel_angle_px {}".format(px))
@@ -52,20 +57,6 @@ class Cursor(SIEffect):
     #def mouse_wheel_angle_degrees(self, degrees):
     #    SIEffect.debug("mouse_wheel_angle_degrees {}".format(degrees))
     
-    def start_test_thread(self):
-        try:
-            t = Thread(target=self.test_thread, args=(2,))
-            t.start()
-        except:
-            if SIEffect.is_logging():
-                SIEffect.debug("Start Test Thread failed")
-    
-    # Define a function for the thread
-    def test_thread(self, delay):
-        time.sleep(delay)
-        proc = subprocess.Popen(["xmessage","Bitte Textdateien in einen eigenen Ordner geben und alle Bilddateien in einen eigenen Ordner geben!"])
-        proc.wait(1000)
-        SIEffect.debug("finished")
 
     def on_middle_mouse_click(self, is_active):
         if SIEffect.is_logging():
