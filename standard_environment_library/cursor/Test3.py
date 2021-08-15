@@ -8,9 +8,9 @@ class Test3(Test):
 		Test.__init__(self,"test3")
 		print("Test3")
 		self.proband = proband
-		self.ergebnis_txt = ["A.txt", "B.txt"]
+		self.ergebnis_txt = ["Kugel.txt", "Lampe.txt", "Rede.txt", "Vogel.txt", "Geld.txt", "Herz.txt", "Rand.txt", "Rot.txt","Kuh.txt", "Punkt.txt", "Zahn.txt", "Zebra.txt", "Haar.txt", "Haut.txt", "Name.txt", "Wort.txt"]
 		self.ergebnis_txt.sort()
-		self.ergebnis_img = ["hase.jpg", "taube.jpg"]
+		self.ergebnis_img = ["hase.jpg", "taube.jpg", "huhn.jpg", "berg.jpg"]
 		self.ergebnis_img.sort()
 
 	# Define a function for the thread

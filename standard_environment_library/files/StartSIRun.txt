@@ -77,37 +77,52 @@ def prepare_test1():
 
 # method to prepare test1
 def prepare_test2():    
-    files = [['A.txt',0,0],
-             ['B.txt',0,0],
-             ['hase.jpg',0,0],
-             ['taube.jpg',0,0]]
-    x, y = 100, 100
-    for f in files:
-        if f[1] == 0 and f[2] == 0:
-            f[1] = x
-            f[2] = y
-            x += 100
-            if x > 650:
-                x = 20
-                y += 100
+    files = [['Kugel.txt', 230, 210], # Bubble1
+            ['Lampe.txt', 210, 210], 
+            ['Rede.txt', 220, 200],  
+            ['vers1.txt', 230, 220],  
+            ['Vogel.txt',240, 250],
+            ['Geld.txt', 400, 200],  # Bubble2
+            ['Herz.txt', 410, 210], 
+            ['Rand.txt', 420, 200],  
+            ['Rot.txt', 440, 240],  
+            ['vers2.txt',440, 230],
+            ['Kuh.txt', 600, 200],  # Bubble 3
+            ['Punkt.txt', 610, 210], 
+            ['vers3.txt', 620, 220],  
+            ['Zahn.txt', 630, 220],  
+            ['Zebra.txt',640, 230],
+            ['Haar.txt', 800, 210],  # Bubble 4
+            ['Haut.txt', 810, 210], 
+            ['Name.txt', 820, 200],  
+            ['vers4.txt', 830, 220],  
+            ['Wort.txt', 840, 230]]
     show_files(files)
     
     # method to prepare test1
 def prepare_test3():    
-    files = [['A.txt',0,0],
-             ['B.txt',0,0],
-             ['hase.jpg',0,0],
-             ['taube.jpg',0,0]]
-    x, y = 100, 100
-    for f in files:
-        if f[1] == 0 and f[2] == 0:
-            f[1] = x
-            f[2] = y
-            x += 100
-            if x > 650:
-                x = 20
-                y += 100
+    files = [['Kugel.txt', 230, 210], # Bubble1
+            ['Lampe.txt', 210, 210], 
+            ['Rede.txt', 220, 200],  
+            ['hase.jpg', 230, 220],  
+            ['Vogel.txt',240, 250],
+            ['Geld.txt', 400, 200],  # Bubble2
+            ['Herz.txt', 410, 210], 
+            ['Rand.txt', 420, 200],  
+            ['Rot.txt', 440, 240],  
+            ['taube.jpg',440, 230],
+            ['Kuh.txt', 600, 200],  # Bubble 3
+            ['Punkt.txt', 610, 210], 
+            ['huhn.jpg', 620, 220],  
+            ['Zahn.txt', 630, 220],  
+            ['Zebra.txt',640, 230],
+            ['Haar.txt', 800, 210],  # Bubble 4
+            ['Haut.txt', 810, 210], 
+            ['Name.txt', 820, 200],  
+            ['berg.jpg', 830, 220],  
+            ['Wort.txt', 840, 230]]
     show_files(files)
+
 # method for normal use
 def add_files():
     files = [['01.txt',0,0],
@@ -202,7 +217,7 @@ def on_start():
     color_picker = False
     sofie = True
     #kwargs = {}
-    kwargs = {"proband": "SchiesslingSofie", "test": "1"}
+    kwargs = {"proband": "SchiesslingSofie", "test": "3"}
 
     add_canvas()
     add_mouse_cursor(kwargs)

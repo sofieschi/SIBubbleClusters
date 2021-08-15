@@ -35,7 +35,7 @@ class Test1(Test):
 					dauer = endtime-self.starttime
 					out.write("pysi,{},{},{},{},{}\n".format(self.test,self.proband,dauer,Test.timestring(self.starttime), Test.timestring(endtime)))
 					Test.finish()
-				time.sleep(5.1)
+				time.sleep(0.1)
 		print("finished")
 
 
