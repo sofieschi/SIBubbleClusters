@@ -15,10 +15,12 @@ class Lassoable(SIEffect):
         self.workaround_active = False
 
     def set_workaround_active(self, is_active):
-        self.workaround_active = is_active
+        pass
+        #self.workaround_active = is_active
 
     def set_ignore_lasso_capability(self, is_active):
-        SIEffect.debug("Lassoable set_ignore_lasso_capability {} {}".format(self.get_uuid(), is_active))
+        if SIEffect.is_logging():
+            SIEffect.debug("Lassoable set_ignore_lasso_capability {} {}".format(self.get_uuid(), is_active))
         if is_active:
             if self.recorded_events == None:
                 self.recorded_events = {}

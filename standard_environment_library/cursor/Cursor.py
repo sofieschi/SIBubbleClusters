@@ -264,8 +264,8 @@ class Cursor(SIEffect):
             self.selected_lassoable = None
             self.selected_lasso = None
             SIEffect.debug("Cursor: move target2={}".format(mt))
-            if mt is not None:
-                mt.process_collision() # workaround for the collision detection bug
+            #if mt is not None:
+            #    mt.process_collision() # workaround for the collision detection bug
             self.move_target = None
         else:
             self.block_lassoable_events(False)
@@ -273,9 +273,10 @@ class Cursor(SIEffect):
 
     @staticmethod
     def set_workaround_active(is_active):
-        all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
-        for l in all_lassoable:
-            l.set_workaround_active(is_active)
+        pass
+        #all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
+        #for l in all_lassoable:
+        #    l.set_workaround_active(is_active)
     
     # Check if a lassoable is selected by the tip of the cursor.
     # If that is the case, the lassoable will be unlinked from a bubble
@@ -295,14 +296,15 @@ class Cursor(SIEffect):
                  
     # Check if a lasso is selected by the tip of the cursor.
     def cursor_tip_selects_lasso(self):
-        cx,cy = self.absolute_x_pos(), self.absolute_y_pos()
-        all_lasso = SIEffect.get_all_objects_extending_class(Lasso)
-        for l in all_lasso:
-            if l.contains_point(cx,cy): # fast check bounding box
-                return l
-                #if l.polygon_contains_point(cx,cy): # slow check exact boundary
-                #    return l
         return None
+        #cx,cy = self.absolute_x_pos(), self.absolute_y_pos()
+        #all_lasso = SIEffect.get_all_objects_extending_class(Lasso)
+        #for l in all_lasso:
+        #    if l.contains_point(cx,cy): # fast check bounding box
+        #        return l
+        #        #if l.polygon_contains_point(cx,cy): # slow check exact boundary
+        #        #    return l
+        #return None
            
     def block_lassoable_events(self, is_active):
         all_lassoables = SIEffect.get_all_objects_extending_class(Lassoable)

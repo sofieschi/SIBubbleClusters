@@ -19,7 +19,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 
 	def __init__(self, shape=PySI.PointVector(), uuid="", kwargs={}):
 		super(Lasso, self).__init__(shape, uuid, E.id.lasso_texture, Lasso.regiontype, Lasso.regionname, kwargs)
-		self.set_QML_path("Lasso.qml")
+		self.qml_path = self.set_QML_path("Lasso.qml")
 		self.color = E.id.lasso_color
 		self._block_remove_link = False
 		self._sb_center_of_circle = []
@@ -69,7 +69,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 
 
 	def set_block_remove_link(self, block):
-		self._block_remove_link = block
+		pass
+		#self._block_remove_link = block
 		
 	def is_remove_link_blocked(self) -> bool:
 		return self._block_remove_link
@@ -192,6 +193,10 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		for p in sp:
 			new_shape.append(p)
 		self.shape = new_shape
+		self.width = int(self.aabb[3].x - self.aabb[0].x)
+		self.height = int(self.aabb[1].y - self.aabb[0].y)
+		self.set_QML_data("widget_width", self.width, PySI.DataType.FLOAT)
+		self.set_QML_data("widget_height", self.height, PySI.DataType.FLOAT)
 		#self.set_shape(new_shape)
 		#SIEffect.debug("new bounding box ={},{}  {},{}   {},{}".format(minx, miny, maxx, maxy, maxx-minx, maxy-miny))
 		#recalculation of the bounding_box aabb is done automatically
