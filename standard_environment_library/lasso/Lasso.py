@@ -27,7 +27,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 		self._sb_endpoints = []
 		self._sb_lassoable_positions = []
 		self.collapse_status = 0  # 1 = collapsed, 2 = expanded, 0 = inbetween
-		SIEffect.debug("Lasso: new Lasso {}".format(self.get_uuid()))
+		if SIEffect.is_logging():
+			SIEffect.debug("Lasso: new Lasso {}".format(self.get_uuid()))
 	
 	# For splitting a lasso must be created. It is done by this method
 	def create_new_lasso(self, bboxes_points) -> None:
@@ -40,7 +41,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 
 	# workaround for the collision detection bug
 	def process_collision(self):
-		SIEffect.debug("Lasso: process_collision")
+		if SIEffect.is_logging():
+			SIEffect.debug("Lasso: process_collision")
 		all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
 		ll = self.get_linked_lassoables()
 		for l in all_lassoable:
@@ -69,8 +71,7 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 
 
 	def set_block_remove_link(self, block):
-		pass
-		#self._block_remove_link = block
+		self._block_remove_link = block
 		
 	def is_remove_link_blocked(self) -> bool:
 		return self._block_remove_link
@@ -123,7 +124,8 @@ class Lasso(Deletable, Movable, Mergeable, SIEffect):
 			if ((pi.y > py) != (pj.y > py)) and (px < (pj.x-pi.x) * (py-pi.y) / (pj.y-pi.y) + pi.x):
 				c = not c
 			j = i
-		SIEffect.debug("Lasso contains point {}".format(c))
+		if SIEffect.is_logging():
+			SIEffect.debug("Lasso contains point {}".format(c))
 		return c
 	
 	#@staticmethod

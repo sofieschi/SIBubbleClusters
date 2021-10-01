@@ -14,10 +14,10 @@ class Entry(Transportable, Movable, Lassoable, SIEffect):
     def __init__(self, shape=PySI.PointVector(), uuid="", regiontype=PySI.EffectType.SI_ENTRY, regionname=PySI.EffectName.SI_STD_NAME_ENTRY, kwargs={}):
         super(Entry, self).__init__(shape, uuid, self.TEXTURE_PATH_NONE, regiontype, regionname, kwargs)
 
-        self.width = 80
-        self.height = 80
-        self.icon_width = 20
-        self.icon_height = 20
+        self.width = 120
+        self.height = 129
+        self.icon_width = 40
+        self.icon_height = 40
         self.text_height = 20
         self.color = PySI.Color(255, 10, 0, 0)
         self.text_color = "FF000000"

@@ -15,8 +15,7 @@ class Lassoable(SIEffect):
         self.workaround_active = False
 
     def set_workaround_active(self, is_active):
-        pass
-        #self.workaround_active = is_active
+        self.workaround_active = is_active
 
     def set_ignore_lasso_capability(self, is_active):
         if SIEffect.is_logging():
@@ -34,7 +33,8 @@ class Lassoable(SIEffect):
 
     # workaround for the collision detection bug
     def process_collision(self):
-        SIEffect.debug("Lassoable: process_collision")
+        if SIEffect.is_logging():
+            SIEffect.debug("Lassoable: process_collision")
         all_lassos = SIEffect.get_all_objects_extending_class(Mergeable);
         for lasso in all_lassos:
             ll = lasso.get_linked_lassoables()
@@ -44,14 +44,17 @@ class Lassoable(SIEffect):
 
     @SIEffect.on_enter(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_enter_recv(self, parent_uuid):
-        SIEffect.debug('LASSOABLE: on_lasso_enter_recv self={} {}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
+        if SIEffect.is_logging():
+            SIEffect.debug('LASSOABLE: on_lasso_enter_recv self={} {}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
         parent = SIEffect.get_object_with(parent_uuid)
         if self.workaround_active and parent != None and not Lassoable.intersect(self,parent):
-            SIEffect.debug('LASSOABLE: on_lasso_enter_recv ignored! self={}'.format(SIEffect.short_uuid(self.get_uuid())))
+            if SIEffect.is_logging():
+                SIEffect.debug('LASSOABLE: on_lasso_enter_recv ignored! self={}'.format(SIEffect.short_uuid(self.get_uuid())))
             return # workaround for collision detection bug
         #if SIEffect.is_logging():
         if self.recorded_events != None:
-            SIEffect.debug("Lassoable recorded_events")
+            if SIEffect.is_logging():
+                SIEffect.debug("Lassoable recorded_events")
             self.recorded_events[parent_uuid] = 1
             return
         self.on_lasso_enter_recv_internal(parent_uuid)
@@ -171,15 +174,18 @@ class Lassoable(SIEffect):
 
     @SIEffect.on_leave(E.id.lasso_capabiliy, SIEffect.RECEPTION)
     def on_lasso_leave_recv(self, parent_uuid):
-        SIEffect.debug('LASSOABLE: on_lasso_leave_recv self={} {}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
+        if SIEffect.is_logging():
+            SIEffect.debug('LASSOABLE: on_lasso_leave_recv self={} {}'.format(SIEffect.short_uuid(self.get_uuid()), SIEffect.short_uuid(parent_uuid)))
         parent = SIEffect.get_object_with(parent_uuid)
         #SIEffect.debug('LASSOABLE: on_lasso_leave_recv self.aabb={}'.format(self.aabb))
         #SIEffect.debug('LASSOABLE: on_lasso_leave_recv lasso.aabb={}'.format(parent.aabb))
         if self.workaround_active and parent != None and Lassoable.intersect(self,parent):
-            SIEffect.debug('LASSOABLE: on_lasso_leave_recv ignored!self={}'.format(SIEffect.short_uuid(self.get_uuid())))
+            if SIEffect.is_logging():
+                SIEffect.debug('LASSOABLE: on_lasso_leave_recv ignored!self={}'.format(SIEffect.short_uuid(self.get_uuid())))
             return # workaround fpr collision detection bug
         if self.recorded_events != None:
-            SIEffect.debug("Lassoable leave recorded events")
+            if SIEffect.is_logging():
+                SIEffect.debug("Lassoable leave recorded events")
             self.recorded_events[parent_uuid] = 0
             return
         #parent = SIEffect.get_object_with(parent_uuid)

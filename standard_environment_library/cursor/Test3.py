@@ -8,15 +8,36 @@ class Test3(Test):
 		Test.__init__(self,"test3")
 		print("Test3")
 		self.proband = proband
-		self.ergebnis_txt = ["Kugel.txt", "Lampe.txt", "Rede.txt", "Vogel.txt", "Geld.txt", "Herz.txt", "Rand.txt", "Rot.txt","Kuh.txt", "Punkt.txt", "Zahn.txt", "Zebra.txt", "Haar.txt", "Haut.txt", "Name.txt", "Wort.txt"]
+		self.ergebnis_txt = ["animals.txt",
+				"groceryList.txt",
+				"icecream.txt",
+				"joke.txt",
+				"message.txt",
+				"movies.txt",
+				"plants.txt",
+				"sources.txt",
+				"todo.txt",
+				"travel.txt",
+				"size.txt"]
 		self.ergebnis_txt.sort()
-		self.ergebnis_img = ["hase.jpg", "taube.jpg", "huhn.jpg", "berg.jpg"]
+		self.ergebnis_img = ["blueBird.jpg",
+				"cat.jpg",
+				"bear.jpg",
+				"panda.jpg",
+				"pigeon.jpg",
+				"rabbit.jpg",
+				"duck.jpg",
+				"shiba.jpg",
+				"sparrow.jpg",
+				"seagull.jpg"]
 		self.ergebnis_img.sort()
 
 	# Define a function for the thread
 	def test_thread(self, delay):
 		time.sleep(delay)
-		proc = subprocess.Popen(["xmessage","-geometry", "730x200+300+400", "Bitte Textdateien in einen eigenen Ordner geben und alle Bilddateien in einen eigenen Ordner geben!"])
+		proc = subprocess.Popen(["xmessage","-geometry", "730x200+300+400", "Please read the task carefully. Once you're ready, click on the 'Start' Button. \n\n TASK: MERGING \n 1. Merge all 4 bubbles. \n 2. Sort by filetype: Separate image and text files and make sure they're in two different bubbles. \n"])
+		#proc = subprocess.Popen(["xmessage", "-geometry", "730x200+300+400",
+		#						 "Bitte lese dir die Aufgabe sorgfaeltig durch. Klicke auf den 'Start' Button, sobald du bereit bist. \n\n TASK: MERGING \n 1. Fuehre alle vier Bubbles zusammen. \n 2. Sortiere anschliessend nach Dateityp: \n Alle Bilddateien und Textdateien müssen nun jeweils in eine separate Bubble. \n"])
 		proc.wait(1000)
 		self.starttime = time.time()
 		print("Start: {}".format(Test.timestring(self.starttime)))
@@ -35,7 +56,7 @@ class Test3(Test):
 					dauer = endtime-self.starttime
 					out.write("pysi,{},{},{},{},{}\n".format(self.test,self.proband,dauer,Test.timestring(self.starttime), Test.timestring(endtime)))
 					Test.finish()
-				time.sleep(0.1)
+					return				time.sleep(0.1)
 		print("finished")
 
 

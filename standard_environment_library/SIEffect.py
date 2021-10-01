@@ -3,6 +3,7 @@ import sys
 from libPySI import PySI
 import inspect
 import os
+from threading import Lock
 
 ## @package SIEffect
 # Documentation for this module / class
@@ -523,10 +524,14 @@ class SIEffect(PySI.Effect):
     def get_all_lnk_sender(self):
         result = []
         for lnk in self.link_relations:
-            if lnk.sender not in result:
-                result.append(lnk.sender)
-        return result  
-    
+            try:
+                if lnk.sender not in result:
+                    result.append(lnk.sender)
+            except:
+                SIEffect.debug("FEHLER {}") #.format(lnk.sender) )
+        return result
+
+
     # get the linked objects, which are senders and extend a given class
     # This method is used to get all linked bubbles for a textfile 
     def get_all_lnk_sender_extending_class(self, cl):
@@ -800,9 +805,11 @@ class SIEffect(PySI.Effect):
             'Line content: %s%s'
             % (RED_START, type(ex).__name__, parsed_file_name, str(user_line_no),  user_line_content.replace('\t', ''), COLOR_END))
           
-          
+    reg_lock = Lock()
+
     @staticmethod
     def add_to_registry(e):
+        SIEffect.reg_lock.acquire()
         if e.get_uuid() in SIEffect._regmap:
             if SIEffect.is_logging():
                 SIEffect.debug("Registry: error: Key {} ist already registered!".format(SIEffect.short_uuid(e.get_uuid())))
@@ -810,10 +817,12 @@ class SIEffect(PySI.Effect):
             if SIEffect.is_logging():
                 SIEffect.debug("Registry: add_to_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(e.get_uuid()), type(e).__name__, e.regionname, e.name))
             SIEffect._regmap[e.get_uuid()] = e
+        SIEffect.reg_lock.release()
         #SIEffect.print_registry()
         
     @staticmethod
     def remove_from_registry(uuid):
+        SIEffect.reg_lock.acquire()
         if uuid not in SIEffect._regmap:
             if SIEffect.is_logging():
                 SIEffect.debug("Registry error: Key {} ist not registered!".format(SIEffect.short_uuid(uuid)))
@@ -821,31 +830,40 @@ class SIEffect(PySI.Effect):
             del SIEffect._regmap[uuid]
             if SIEffect.is_logging():
                 SIEffect.debug("Registry remove_from_registry {}".format(SIEffect.short_uuid(uuid)))
+        SIEffect.reg_lock.release()
         #SIEffect.print_registry()
     
     @staticmethod
     def get_object_with(uuid):
+        SIEffect.reg_lock.acquire()
         if uuid in SIEffect._regmap:
-            return SIEffect._regmap[uuid]
+            ret = SIEffect._regmap[uuid]
+            SIEffect.reg_lock.release()
+            return ret
         if SIEffect.is_logging():
             SIEffect.debug("Registry error: an object with uuid {} is not stored in the registry".format(SIEffect.short_uuid(uuid)))
+        SIEffect.reg_lock.release()
         return None
     
     @staticmethod
     def get_all_objects_extending_class(cl):
         result = []
+        SIEffect.reg_lock.acquire()
         for value in SIEffect._regmap.values():
             #SIEffect.debug("get_all_objects: value.class={}".format(type(value).__name__))
             if isinstance(value, cl):
                 result.append(value)
+        SIEffect.reg_lock.release()
         return result
         
     @staticmethod
     def print_registry():
+        SIEffect.reg_lock.acquire()
         for key,value in SIEffect._regmap.items():
             if SIEffect.is_logging():
                 SIEffect.debug("Registry: print_registry {} -> type={},regionname={},name={}".format(SIEffect.short_uuid(key), type(value).__name__, value.regionname, value.name))
-        
+        SIEffect.reg_lock.release()
+
     @staticmethod
     def is_logging() -> bool:
         return False

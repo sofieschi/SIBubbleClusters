@@ -43,7 +43,7 @@ class Cursor(SIEffect):
         
         self.selected_lassoable = None # lassoable is selected on right click
         self.selected_lasso = None # lasso is selected on right click
-        self.debug = True
+        self.debug = False
         if kwargs["test"] == "1":
             self.test = Test1(kwargs["proband"])
         elif kwargs["test"] == "2":
@@ -232,9 +232,10 @@ class Cursor(SIEffect):
                 self.selected_lasso = self.cursor_tip_selects_lasso()
                 if self.selected_lasso != None and self.move_target is None:
                     self.move_target = self.selected_lasso
-                    SIEffect.debug("Cursor: move cursor inlasso")
-                    for l in self.selected_lasso.get_linked_lassoables():
-                        SIEffect.debug("Cursor: move cursor inlasso linked lassoables {}".format(l.get_uuid()))
+                    if SIEffect.is_logging():
+                        SIEffect.debug("Cursor: move cursor inlasso")
+                        for l in self.selected_lasso.get_linked_lassoables():
+                            SIEffect.debug("Cursor: move cursor inlasso linked lassoables {}".format(l.get_uuid()))
                     #self.start_collision_bug_workaround()
                     self.selected_lasso.link_position_to_cursor(self.get_uuid())
             #if sel_lassoable_lasso != None:
@@ -244,16 +245,19 @@ class Cursor(SIEffect):
             #if self.debug or SIEffect.is_logging():
             #    SIEffect.debug("Cursor: move cursor23 {}".format(PySI.CollisionCapability.MOVE not in self.cap_emit.keys()))
             if PySI.CollisionCapability.MOVE not in self.cap_emit.keys():
-                SIEffect.debug("Cursor: move cursor enable effect")
+                if SIEffect.is_logging():
+                    SIEffect.debug("Cursor: move cursor enable effect")
                 self.enable_effect(PySI.CollisionCapability.MOVE, True, self.on_move_enter_emit, self.on_move_continuous_emit, self.on_move_leave_emit)
             else:
-                SIEffect.debug("Cursor: move cursor not enable effect")
+                if SIEffect.is_logging():
+                    SIEffect.debug("Cursor: move cursor not enable effect")
             self.block_lassoable_events(True)
         elif PySI.CollisionCapability.MOVE in self.cap_emit.keys():
             self.disable_effect(PySI.CollisionCapability.MOVE, True)
             mt = self.move_target
             if self.move_target is not None:
-                SIEffect.debug("Cursor: move target={}".format(self.move_target))
+                if SIEffect.is_logging():
+                    SIEffect.debug("Cursor: move target={}".format(self.move_target))
                 self.move_target.on_move_leave_recv(*self.on_move_leave_emit(self.move_target))
             self.block_lassoable_events(False)
             #all_lassos = SIEffect.get_all_objects_extending_class(Lasso)
@@ -263,9 +267,10 @@ class Cursor(SIEffect):
                 self.selected_lasso.unlink_position_to_cursor(self.get_uuid())
             self.selected_lassoable = None
             self.selected_lasso = None
-            SIEffect.debug("Cursor: move target2={}".format(mt))
-            #if mt is not None:
-            #    mt.process_collision() # workaround for the collision detection bug
+            if SIEffect.is_logging():
+                SIEffect.debug("Cursor: move target2={}".format(mt))
+            if mt is not None:
+                mt.process_collision() # workaround for the collision detection bug
             self.move_target = None
         else:
             self.block_lassoable_events(False)
@@ -273,10 +278,9 @@ class Cursor(SIEffect):
 
     @staticmethod
     def set_workaround_active(is_active):
-        pass
-        #all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
-        #for l in all_lassoable:
-        #    l.set_workaround_active(is_active)
+        all_lassoable = SIEffect.get_all_objects_extending_class(Lassoable);
+        for l in all_lassoable:
+            l.set_workaround_active(is_active)
     
     # Check if a lassoable is selected by the tip of the cursor.
     # If that is the case, the lassoable will be unlinked from a bubble
@@ -296,15 +300,14 @@ class Cursor(SIEffect):
                  
     # Check if a lasso is selected by the tip of the cursor.
     def cursor_tip_selects_lasso(self):
+        cx,cy = self.absolute_x_pos(), self.absolute_y_pos()
+        all_lasso = SIEffect.get_all_objects_extending_class(Lasso)
+        for l in all_lasso:
+            if l.contains_point(cx,cy): # fast check bounding box
+                return l
+                #if l.polygon_contains_point(cx,cy): # slow check exact boundary
+                #    return l
         return None
-        #cx,cy = self.absolute_x_pos(), self.absolute_y_pos()
-        #all_lasso = SIEffect.get_all_objects_extending_class(Lasso)
-        #for l in all_lasso:
-        #    if l.contains_point(cx,cy): # fast check bounding box
-        #        return l
-        #        #if l.polygon_contains_point(cx,cy): # slow check exact boundary
-        #        #    return l
-        #return None
            
     def block_lassoable_events(self, is_active):
         all_lassoables = SIEffect.get_all_objects_extending_class(Lassoable)

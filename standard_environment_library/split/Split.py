@@ -34,17 +34,18 @@ class Split(Deletable, Movable, SIEffect):
         #self.lasso_to_split = None
         all_lassos = SIEffect.get_all_objects_extending_class(Mergeable);
         for lasso in all_lassos:
+            SIEffect.debug("Split test lasso={}".format(lasso))
             set1, set2 = self.split_lasso(lasso)
             if len(set1)==0 or len(set2)==0:
                 # no split, so ignore
                 if len(set1)+len(set2) == 1:
                     self.check_if_delete_lasso(lasso)
                 else:    
-                    if SIEffect.is_logging():
-                        SIEffect.debug("Split no lasso={}".format(lasso))
+                    #if SIEffect.is_logging():
+                    SIEffect.debug("Split no lasso={}".format(lasso))
             else:
-                if SIEffect.is_logging():
-                    SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
+                #if SIEffect.is_logging():
+                SIEffect.debug("Split lasso in {},{}".format(len(set1), len(set2)))
                 factor = 60.0 / self.normal_length 
                 # first we need to create the new lasso, but already with the hull, which
                 # will contain all lassoables of set1, which will be moved.
@@ -72,17 +73,17 @@ class Split(Deletable, Movable, SIEffect):
             t.start()
             Split.splitcounter += 1
         except:
-            if SIEffect.is_logging():
-                SIEffect.debug("Start Splitend Thread failed")
+            #if SIEffect.is_logging():
+            SIEffect.debug("Start Splitend Thread failed")
     
     # Define a function for the thread
     def delete_split(self, delay):
-        if SIEffect.is_logging():
-            SIEffect.debug("Start Splitend Thread begin")
+        #if SIEffect.is_logging():
+        SIEffect.debug("Start Splitend Thread begin")
         time.sleep(delay)
         self.delete()
-        if SIEffect.is_logging():
-            SIEffect.debug("Start Splitend Thread ended")
+        #if SIEffect.is_logging():
+        SIEffect.debug("Start Splitend Thread ended")
       
     @staticmethod
     def create_new_lasso(lasso, moving_list):

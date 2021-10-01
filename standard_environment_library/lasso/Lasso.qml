@@ -19,6 +19,6 @@ Item {
 		anchors.top: parent.top
         asynchronous: true
 
-		visible: true
+		visible: false
 	}
 }

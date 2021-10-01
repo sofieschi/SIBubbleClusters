@@ -8,13 +8,15 @@ class Test2(Test):
 		Test.__init__(self,"test2")
 		print("Test2")
 		self.proband = proband
-		self.ergebnis_txt = ["vers1.txt", "vers2.txt", "vers3.txt", "vers4.txt"]
+		self.ergebnis_txt = ["blueBird.jpg", "pigeon.jpg", "duck.jpg", "sparrow.jpg", "seagull.jpg"]
 		self.ergebnis_txt.sort()
 
 	# Define a function for the thread
 	def test_thread(self, delay):
 		time.sleep(delay)
-		proc = subprocess.Popen(["xmessage","-geometry", "730x200+300+400", "Bitte Textdateien in einen eigenen Ordner geben und alle Bilddateien in einen eigenen Ordner geben!"])
+		proc = subprocess.Popen(["xmessage","-geometry", "730x200+300+400", "Please read the task carefully. Once you're ready, click on the 'Start' Button. \n\n TASK: SEARCHING \n 1. Create a new bubble that contains all bird images. \n"])
+		#proc = subprocess.Popen(["xmessage", "-geometry", "730x200+300+400",
+		#						 "Bitte lese dir die Aufgabe sorgfaeltig durch. Klicke auf den 'Start' Button, sobald du bereit bist. \n\n TASK: SEARCHING \n 1. Erstelle eine Bubble, die nur alle Vogelbilder enthaelt. \n"])
 		proc.wait(1000)
 		self.starttime = time.time()
 		print("Start: {}".format(Test.timestring(self.starttime)))
@@ -32,6 +34,7 @@ class Test2(Test):
 					dauer = endtime-self.starttime
 					out.write("pysi,{},{},{},{},{}\n".format(self.test,self.proband,dauer,Test.timestring(self.starttime), Test.timestring(endtime)))
 					Test.finish()
+					return
 				time.sleep(0.1)
 		print("finished")
 
